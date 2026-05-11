@@ -87,15 +87,6 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
         })}
       </nav>
 
-      {(!collapsed || mobile) && (
-        <div className="rounded-2xl gradient-brand p-4 text-white shadow-glow">
-          <div className="text-sm font-semibold">Upgrade to Pro</div>
-          <p className="mt-1 text-xs text-white/80">Unlock advanced analytics & unlimited payroll runs.</p>
-          <button className="mt-3 w-full rounded-lg bg-white/20 backdrop-blur px-3 py-1.5 text-xs font-medium hover:bg-white/30 transition">
-            Upgrade now
-          </button>
-        </div>
-      )}
 
       <Link
         to="/"

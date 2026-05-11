@@ -12,27 +12,32 @@ const dept = [
 
 const DepartmentSplit = () => {
   return (
-    <Card>
-      <h3 className="text-base font-semibold">Department Split</h3>
-      <p className="text-xs text-muted-foreground mt-0.5">Headcount distribution</p>
-      <div className="h-[220px] mt-4">
+    <Card className="p-5 md:p-6 h-full flex flex-col">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold leading-none">Department Split</h3>
+        <p className="text-sm text-muted-foreground mt-1.5">Headcount distribution</p>
+      </div>
+      <div className="h-[240px] w-full relative">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={dept} dataKey="value" innerRadius={55} outerRadius={85} paddingAngle={3}>
+            <Pie data={dept} dataKey="value" innerRadius={60} outerRadius={90} paddingAngle={5}>
               {dept.map((d) => <Cell key={d.name} fill={d.color} stroke="none" />)}
             </Pie>
-            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12 }} />
+            <Tooltip 
+                contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12, boxShadow: 'var(--shadow-card)' }}
+                itemStyle={{ padding: '2px 0' }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="space-y-2 mt-2">
+      <div className="space-y-3 mt-auto pt-4">
         {dept.map((d) => (
           <div key={d.name} className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-              <span className="text-muted-foreground">{d.name}</span>
+            <div className="flex items-center gap-2.5">
+              <span className="h-2.5 w-2.5 rounded-full shadow-sm" style={{ background: d.color }} />
+              <span className="text-muted-foreground font-medium">{d.name}</span>
             </div>
-            <span className="font-medium">{d.value}%</span>
+            <span className="font-bold">{d.value}%</span>
           </div>
         ))}
       </div>

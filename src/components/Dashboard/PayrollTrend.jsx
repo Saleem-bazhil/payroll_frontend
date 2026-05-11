@@ -16,15 +16,17 @@ const trend = [
 
 const PayrollTrend = () => {
   return (
-    <Card className="xl:col-span-2">
-      <div className="flex items-center justify-between mb-6">
+    <Card className="p-5 md:p-6 h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h3 className="text-base font-semibold">Payroll Trend</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Total disbursed over the last 8 months</p>
+          <h3 className="text-lg font-semibold leading-none">Payroll Trend</h3>
+          <p className="text-sm text-muted-foreground mt-1.5">Total disbursed over the last 8 months</p>
         </div>
-        <Badge variant="primary">+18.2% YoY</Badge>
+        <div className="flex items-center gap-2">
+            <Badge variant="primary" className="bg-primary/10 text-primary border-none font-semibold">+18.2% YoY</Badge>
+        </div>
       </div>
-      <div className="h-[280px] -mx-2">
+      <div className="h-[300px] w-full -ml-4 pr-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={trend}>
             <defs>
