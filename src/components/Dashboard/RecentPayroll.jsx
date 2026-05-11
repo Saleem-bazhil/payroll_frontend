@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"

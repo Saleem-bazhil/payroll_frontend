@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/badge"
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 

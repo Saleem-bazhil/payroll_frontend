@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/Card"
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts"
 
 const dept = [

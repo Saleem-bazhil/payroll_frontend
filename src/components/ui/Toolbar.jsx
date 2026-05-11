@@ -1,5 +1,5 @@
 import { Filter, Download, Plus } from "lucide-react";
-import {Button} from "../ui/button";
+import {Button} from "./button";
 
 const Toolbar = ({ search = true, onAdd, addLabel }) => {
   return (

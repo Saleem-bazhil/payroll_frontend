@@ -1,10 +1,10 @@
 import { Avatar} from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import PageHeader from "./PageHeader";
-import StatsCard from "./StatsCard";
-import Toolbar from "./Toolbar";
-import DataTable from "./DataTable";
+import PageHeader from "../ui/PageHeader";
+import StatsCard from "../ui/StatsCard";
+import Toolbar from "../ui/Toolbar";
+import DataTable from "../ui/DataTable";
 import { Users, UserPlus, UserCheck, UserMinus, MoreHorizontal } from "lucide-react";
 
 const employees = [
