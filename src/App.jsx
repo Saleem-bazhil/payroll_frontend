@@ -4,6 +4,7 @@ import Dashboard from './pages/DashboardPage';
 import EmployeePage from './pages/EmployeePage';
 import AttendancePage from './pages/AttendancePage';
 import PayrollPage from './pages/PayrollPage';
+import PayslipPage from './pages/PayslipPage';
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
         <Route path="/employees" element={<EmployeePage />} />  
         <Route path="/attendance" element={<AttendancePage />} />  
         <Route path="/payroll" element={<PayrollPage />} />
+        <Route path="/payslips" element={<PayslipPage />} />
       </Routes>
     </BrowserRouter>
     </>
