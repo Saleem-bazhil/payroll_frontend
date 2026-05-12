@@ -7,12 +7,12 @@ import DataTable from "../ui/DataTable";
 import { Download, Eye, FileText, Sparkles } from "lucide-react";
 
 const slips = [
-  { name: "Sophia Chen", id: "PSL-1142", period: "Nov 2025", amount: "$8,420", status: "Generated" },
-  { name: "Marcus Reyes", id: "PSL-1143", period: "Nov 2025", amount: "$6,180", status: "Generated" },
-  { name: "Aiko Tanaka", id: "PSL-1144", period: "Nov 2025", amount: "$5,940", status: "Pending" },
-  { name: "Liam O'Brien", id: "PSL-1145", period: "Nov 2025", amount: "$4,750", status: "Generated" },
-  { name: "Priya Patel", id: "PSL-1146", period: "Nov 2025", amount: "$5,210", status: "Pending" },
-  { name: "Diego Alvarez", id: "PSL-1147", period: "Nov 2025", amount: "$7,830", status: "Generated" },
+  { name: "Sophia Chen", id: "PSL-1142", period: "Nov 2025", amount: "₹8,420", status: "Generated" },
+  { name: "Marcus Reyes", id: "PSL-1143", period: "Nov 2025", amount: "₹6,180", status: "Generated" },
+  { name: "Aiko Tanaka", id: "PSL-1144", period: "Nov 2025", amount: "₹5,940", status: "Pending" },
+  { name: "Liam O'Brien", id: "PSL-1145", period: "Nov 2025", amount: "₹4,750", status: "Generated" },
+  { name: "Priya Patel", id: "PSL-1146", period: "Nov 2025", amount: "₹5,210", status: "Pending" },
+  { name: "Diego Alvarez", id: "PSL-1147", period: "Nov 2025", amount: "₹7,830", status: "Generated" },
 ];
 
 const PayslipsPage = () => {
