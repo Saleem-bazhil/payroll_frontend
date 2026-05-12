@@ -7,6 +7,7 @@ import PayrollPage from './pages/PayrollPage';
 import PayslipPage from './pages/PayslipPage';
 // import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
+import LeavePage from './pages/LeavePage';
 import LoginPage from './pages/Login';
 import UserManagementPage from './pages/UserManagementPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -38,6 +39,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EMPLOYEE]} />}>
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/payslips" element={<PayslipPage />} />
+          <Route path="/leaves" element={<LeavePage />} />
         </Route>
 
         {/* <Route path="/calendar" element={<CalendarPage />} /> */}
