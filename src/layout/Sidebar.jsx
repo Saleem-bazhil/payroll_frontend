@@ -15,20 +15,32 @@ import {
   X
 } from "lucide-react";
 import { useState } from "react";
+import { ROLES, clearAuth, getUserRole, normalizeRole } from "@/auth/rbac";
 
 const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { to: "/employees", label: "Employees", icon: Users },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
   { to: "/payroll", label: "Payroll", icon: Wallet },
   { to: "/payslips", label: "Payslips", icon: FileText },
   // { to: "/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/reports", label: "Reports", icon: BarChart3, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   // { to: "/compliance", label: "Tax & Compliance", icon: ShieldCheck },
 ];
 
+const defaultRoles = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
+
+const navWithRoles = nav.map((item) => {
+  if (item.to === "/attendance" || item.to === "/payslips") {
+    return { ...item, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EMPLOYEE] };
+  }
+  return { ...item, roles: item.roles || defaultRoles };
+});
+
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
   const { pathname: path } = useLocation();
+  const role = normalizeRole(getUserRole());
+  const visibleNav = navWithRoles.filter((item) => item.roles.includes(role));
 
   const content = (mobile = false) => (
     <div className="flex h-full flex-col gap-2 p-4">
@@ -59,7 +71,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
       </div>
 
       <nav className="flex-1 space-y-1 px-1">
-        {nav.map((item) => {
+        {visibleNav.map((item) => {
           const active = item.to === "/" ? path === "/" : path.startsWith(item.to);
           const Icon = item.icon;
           return (
@@ -89,13 +101,14 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
 
 
       <Link
-        to="/"
+        to="/login"
+        onClick={() => clearAuth()}
         className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground transition ${
           collapsed && !mobile ? "justify-center" : ""
         }`}
       >
         <Settings className="h-[18px] w-[18px]" />
-        {(!collapsed || mobile) && <span>Settings</span>}
+        {(!collapsed || mobile) && <span>Logout</span>}
       </Link>
     </div>
   );

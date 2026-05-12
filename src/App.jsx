@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter,Routes,Route } from 'react-router-dom';
+import { BrowserRouter,Routes,Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/DashboardPage';
 import EmployeePage from './pages/EmployeePage';
 import AttendancePage from './pages/AttendancePage';
@@ -8,22 +8,39 @@ import PayslipPage from './pages/PayslipPage';
 // import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/Login';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import { ROLES, getDefaultRouteByRole, getUserRole, isAuthenticated } from './auth/rbac';
 // import CompliancePage from './pages/CompliancePage';
+
+function RoleHomeRedirect() {
+  if (!isAuthenticated()) return <Navigate to="/login" replace />;
+  return <Navigate to={getDefaultRouteByRole(getUserRole())} replace />;
+}
+
 function App() {
 
   return (
     <>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/employees" element={<EmployeePage />} />  
-        <Route path="/attendance" element={<AttendancePage />} />  
-        <Route path="/payroll" element={<PayrollPage />} />
-        <Route path="/payslips" element={<PayslipPage />} />
+        <Route path="/" element={<RoleHomeRedirect />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/employees" element={<EmployeePage />} />
+          <Route path="/payroll" element={<PayrollPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EMPLOYEE]} />}>
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/payslips" element={<PayslipPage />} />
+        </Route>
+
         {/* <Route path="/calendar" element={<CalendarPage />} /> */}
-        <Route path="/reports" element={<ReportsPage />} />
         {/* <Route path='/compliance' element={<CompliancePage />} /> */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
     </>

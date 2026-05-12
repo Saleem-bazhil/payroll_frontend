@@ -1,18 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Wallet, Mail, Lock, ArrowRight } from "lucide-react";
+import { Wallet, User, Lock, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "@/api/Api";
+import { getDefaultRouteByRole, getUserRole, isAuthenticated, storeAuthTokens } from "@/auth/rbac";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("aisha@payrollx.com");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("password");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate(getDefaultRouteByRole(getUserRole()), { replace: true });
+    }
+  }, [navigate]);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate({ to: "/" });
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/api/auth/login/", {
+        username,
+        password,
+      });
+
+      const role = storeAuthTokens(response.data);
+      if (!role) {
+        setError("Role claim missing in JWT. Please contact your administrator.");
+        return;
+      }
+
+      navigate(getDefaultRouteByRole(role), { replace: true });
+    } catch {
+      setError("Invalid credentials. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -73,16 +103,16 @@ const LoginPage = () => {
 
           <form onSubmit={handleLogin} className="mt-8 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="pl-9 h-11"
-                  placeholder="you@company.com"
+                  placeholder="Enter your username"
                   required
                 />
               </div>
@@ -114,10 +144,12 @@ const LoginPage = () => {
 
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-xl gradient-brand text-white font-medium shadow-glow hover:opacity-95 transition"
             >
-              Sign in <ArrowRight className="h-4 w-4" />
+              {isLoading ? "Signing in..." : "Sign in"} <ArrowRight className="h-4 w-4" />
             </button>
+            {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
             <div className="relative my-2">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
@@ -126,7 +158,7 @@ const LoginPage = () => {
 
             <button
               type="button"
-              onClick={() => navigate({ to: "/" })}
+              onClick={() => navigate("/login")}
               className="w-full h-11 rounded-xl border border-border bg-card hover:bg-muted/40 transition text-sm font-medium"
             >
               Continue with Google
