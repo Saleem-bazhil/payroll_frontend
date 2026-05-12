@@ -33,7 +33,7 @@ const ReportsPage = () => {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-        <StatsCard label="Avg Cost / Employee" value="$6,420" delta="2.1%" icon={DollarSign} accent="primary" />
+        <StatsCard label="Avg Cost / Employee" value="₹6,420" delta="2.1%" icon={DollarSign} accent="primary" />
         <StatsCard label="Total Headcount" value="1,284" delta="3.2%" icon={Users} accent="info" />
         <StatsCard label="Bonus Ratio" value="14.6%" delta="1.4%" icon={TrendingUp} accent="success" />
         <StatsCard label="Reports Generated" value="248" delta="22%" icon={BarChart3} accent="warning" />
@@ -43,7 +43,7 @@ const ReportsPage = () => {
         <Card className="p-5 md:p-6">
           <div className="mb-6">
             <h3 className="text-lg font-semibold leading-none">Salary Breakdown</h3>
-            <p className="text-sm text-muted-foreground mt-1.5">Base vs bonus by department (in $K)</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Base vs bonus by department (in ₹K)</p>
           </div>
           <div className="h-[320px] w-full -ml-4 pr-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -64,7 +64,7 @@ const ReportsPage = () => {
         <Card className="p-5 md:p-6">
           <div className="mb-6">
             <h3 className="text-lg font-semibold leading-none">Actual vs Projected</h3>
-            <p className="text-sm text-muted-foreground mt-1.5">Payroll forecast accuracy ($K)</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Payroll forecast accuracy (₹K)</p>
           </div>
           <div className="h-[320px] w-full -ml-4 pr-2">
             <ResponsiveContainer width="100%" height="100%">
