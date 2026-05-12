@@ -22,9 +22,9 @@ const nav = [
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
   { to: "/payroll", label: "Payroll", icon: Wallet },
   { to: "/payslips", label: "Payslips", icon: FileText },
-  { to: "/calendar", label: "Calendar", icon: CalendarDays },
+  // { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/compliance", label: "Tax & Compliance", icon: ShieldCheck },
+  // { to: "/compliance", label: "Tax & Compliance", icon: ShieldCheck },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
