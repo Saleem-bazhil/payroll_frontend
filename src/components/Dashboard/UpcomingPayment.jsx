@@ -20,7 +20,7 @@ const UpcomingPayment = () => {
             <Calendar className="h-16 w-16 -mr-4 -mt-4" />
         </div>
         <div className="text-[11px] uppercase tracking-[0.1em] font-bold opacity-80">Total to disburse</div>
-        <div className="text-3xl font-bold mt-2 tracking-tight">$184,520.00</div>
+        <div className="text-3xl font-bold mt-2 tracking-tight">₹184,520.00</div>
         <div className="mt-6 flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
@@ -39,7 +39,7 @@ const UpcomingPayment = () => {
         </div>
         <div className="rounded-2xl border border-border/50 bg-muted/30 p-4 transition-colors hover:bg-muted/50">
           <div className="text-xs font-medium text-muted-foreground">Avg. payout</div>
-          <div className="text-xl font-bold mt-1">$6,420</div>
+          <div className="text-xl font-bold mt-1">₹6,420</div>
         </div>
       </div>
     </Card>
