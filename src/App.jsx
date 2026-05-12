@@ -8,6 +8,7 @@ import PayslipPage from './pages/PayslipPage';
 // import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/Login';
+import UserManagementPage from './pages/UserManagementPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ROLES, getDefaultRouteByRole, getUserRole, isAuthenticated } from './auth/rbac';
 // import CompliancePage from './pages/CompliancePage';
@@ -28,6 +29,7 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/users" element={<UserManagementPage />} />
           <Route path="/employees" element={<EmployeePage />} />
           <Route path="/payroll" element={<PayrollPage />} />
           <Route path="/reports" element={<ReportsPage />} />

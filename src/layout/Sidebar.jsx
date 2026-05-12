@@ -19,6 +19,7 @@ import { ROLES, clearAuth, getUserRole, normalizeRole } from "@/auth/rbac";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
+  { to: "/users", label: "Users", icon: Users, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { to: "/employees", label: "Employees", icon: Users },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
   { to: "/payroll", label: "Payroll", icon: Wallet },

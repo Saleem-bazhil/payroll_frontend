@@ -30,6 +30,11 @@ const formatLocalDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+const getDatePart = (dateTimeValue) => {
+  if (!dateTimeValue) return "";
+  return String(dateTimeValue).slice(0, 10);
+};
+
 const Attendance = () => {
   const {
     records,
@@ -376,7 +381,12 @@ const Attendance = () => {
               <input
                 type="datetime-local"
                 value={employeeIntime}
-                onChange={(e) => setEmployeeIntime(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setEmployeeIntime(value);
+                  const day = getDatePart(value);
+                  if (day) setSelectedDate(day);
+                }}
                 className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
               />
               <Button
@@ -394,7 +404,12 @@ const Attendance = () => {
               <input
                 type="datetime-local"
                 value={employeeOuttime}
-                onChange={(e) => setEmployeeOuttime(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setEmployeeOuttime(value);
+                  const day = getDatePart(value);
+                  if (day) setSelectedDate(day);
+                }}
                 className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
               />
               <Button

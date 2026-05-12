@@ -7,6 +7,23 @@ export const useEmployee = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
+    const parseErrorMessage = (err) => {
+        const data = err.response?.data;
+        if (!data) return err.message || "Operation failed";
+        if (typeof data === "string") return data;
+        if (data.detail) return data.detail;
+        if (Array.isArray(data.non_field_errors) && data.non_field_errors.length) {
+            return data.non_field_errors[0];
+        }
+        const firstKey = Object.keys(data)[0];
+        if (firstKey) {
+            const value = data[firstKey];
+            if (Array.isArray(value) && value.length) return `${firstKey}: ${value[0]}`;
+            if (typeof value === "string") return `${firstKey}: ${value}`;
+        }
+        return "Operation failed";
+    };
+
     const handleRequest = async (requestFn, successMsg) => {
         try {
             setLoading(true);
@@ -17,7 +34,7 @@ export const useEmployee = () => {
             return result;
         }
         catch (err) {
-            const message = err.response?.data?.detail || err.message || "Operation failed";
+            const message = parseErrorMessage(err);
             setError(message);
             throw err;
         }
