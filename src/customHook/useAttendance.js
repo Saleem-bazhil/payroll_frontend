@@ -8,6 +8,23 @@ export const useAttendance = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  const parseErrorMessage = (err) => {
+    const data = err.response?.data;
+    if (!data) return err.message || "Operation failed";
+    if (typeof data === "string") return data;
+    if (data.detail) return data.detail;
+    if (Array.isArray(data.non_field_errors) && data.non_field_errors.length) {
+      return data.non_field_errors[0];
+    }
+    const firstKey = Object.keys(data)[0];
+    if (firstKey) {
+      const val = data[firstKey];
+      if (Array.isArray(val) && val.length) return `${firstKey}: ${val[0]}`;
+      if (typeof val === "string") return `${firstKey}: ${val}`;
+    }
+    return "Operation failed";
+  };
+
   const handleRequest = async (requestFn, successMsg) => {
     try {
       setLoading(true);
@@ -17,7 +34,7 @@ export const useAttendance = () => {
       setSuccess(successMsg || "Operation completed successfully");
       return result;
     } catch (err) {
-      const message = err.response?.data?.detail || err.message || "Operation failed";
+      const message = parseErrorMessage(err);
       setError(message);
       throw err;
     } finally {
@@ -39,7 +56,13 @@ export const useAttendance = () => {
       () => attendanceService.create(attendanceData),
       "Attendance record created successfully"
     );
-    if (data) setRecords((prev) => [...prev, data]);
+    if (data) {
+      setRecords((prev) => {
+        const idx = prev.findIndex((r) => r.id === data.id);
+        if (idx === -1) return [...prev, data];
+        return prev.map((r) => (r.id === data.id ? data : r));
+      });
+    }
     return data;
   }, []);
 

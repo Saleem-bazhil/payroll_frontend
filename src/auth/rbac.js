@@ -36,6 +36,12 @@ function parseJwt(token) {
   }
 }
 
+export function getTokenClaims() {
+  const token = getAccessToken();
+  if (!token) return null;
+  return parseJwt(token);
+}
+
 function getRoleFromClaims(claims) {
   if (!claims) return null;
   return normalizeRole(
@@ -63,9 +69,8 @@ export function getAccessToken() {
 }
 
 export function getUserRole() {
-  const token = getAccessToken();
-  if (!token) return null;
-  const claims = parseJwt(token);
+  const claims = getTokenClaims();
+  if (!claims) return null;
   return getRoleFromClaims(claims) || normalizeRole(localStorage.getItem(ROLE_KEY));
 }
 

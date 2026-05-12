@@ -19,7 +19,9 @@ const AttendanceForm = ({
   initialData = null, 
   onSubmit, 
   onCancel, 
-  loading = false 
+  loading = false,
+  lockedFields = {},
+  forceValues = {}
 }) => {
   const [formData, setFormData] = useState(initialFormState);
 
@@ -34,8 +36,10 @@ const AttendanceForm = ({
         outtime: initialData.outtime ? new Date(initialData.outtime).toISOString().slice(0, 16) : "",
         status: initialData.status || "Present",
       });
+      return;
     }
-  }, [initialData]);
+    setFormData((prev) => ({ ...prev, ...forceValues }));
+  }, [initialData, forceValues]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,7 +48,7 @@ const AttendanceForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit({ ...formData, ...forceValues });
   };
 
   return (
@@ -72,6 +76,7 @@ const AttendanceForm = ({
               name="employee_name"
               value={formData.employee_name}
               onChange={handleChange}
+              disabled={lockedFields.employee_name}
               required
               className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
             />
@@ -85,6 +90,7 @@ const AttendanceForm = ({
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
+                disabled={lockedFields.role}
                 required
                 className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
               />
@@ -98,6 +104,7 @@ const AttendanceForm = ({
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
+                disabled={lockedFields.department}
                 required
                 className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
               />
@@ -111,6 +118,7 @@ const AttendanceForm = ({
               name="salary"
               value={formData.salary}
               onChange={handleChange}
+              disabled={lockedFields.salary}
               required
               step="0.01"
               className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
@@ -127,6 +135,7 @@ const AttendanceForm = ({
                 name="intime"
                 value={formData.intime}
                 onChange={handleChange}
+                disabled={lockedFields.intime}
                 className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
               />
             </div>
@@ -139,6 +148,7 @@ const AttendanceForm = ({
                 name="outtime"
                 value={formData.outtime}
                 onChange={handleChange}
+                disabled={lockedFields.outtime}
                 className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
               />
             </div>

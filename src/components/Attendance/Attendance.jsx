@@ -12,6 +12,7 @@ import StatsCard from "../ui/StatsCard";
 import DataTable from "../ui/DataTable";
 import { useAttendance } from "../../customHook/useAttendance";
 import AttendanceForm from "./AttendanceForm";
+import { ROLES, getTokenClaims, getUserRole, normalizeRole } from "@/auth/rbac";
 import {
   formatTime, 
   calculateHours,
@@ -49,6 +50,13 @@ const Attendance = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     return formatLocalDate(new Date());
   });
+  const [employeeIntime, setEmployeeIntime] = useState("");
+  const [employeeOuttime, setEmployeeOuttime] = useState("");
+  const role = normalizeRole(getUserRole());
+  const isEmployee = role === ROLES.EMPLOYEE;
+  const claims = getTokenClaims() || {};
+  const username = claims.username || claims.user_name || claims.sub || "";
+  const employeeId = claims.employee_id ? Number(claims.employee_id) : null;
 
   useEffect(() => {
     fetchAll();
@@ -67,6 +75,13 @@ const Attendance = () => {
     const selected = new Date(year, month - 1, day);
 
     return records.filter((record) => {
+      if (isEmployee) {
+        if (employeeId && Number(record.employee_id) !== employeeId) return false;
+        if (!employeeId && username) {
+          const recordName = String(record.employee_name || "").toLowerCase();
+          if (recordName !== String(username).toLowerCase()) return false;
+        }
+      }
       const recordDate = record.intime || record.outtime;
       if (!recordDate) return false;
       const current = new Date(recordDate);
@@ -76,7 +91,73 @@ const Attendance = () => {
         current.getDate() === selected.getDate()
       );
     });
-  }, [records, selectedDate]);
+  }, [records, selectedDate, isEmployee, username, employeeId]);
+
+  const employeeFixedValues = useMemo(() => {
+    if (!isEmployee) return {};
+    const lastRecord = records.find((r) => {
+      if (employeeId) return Number(r.employee_id) === employeeId;
+      return String(r.employee_name || "").toLowerCase() === String(username).toLowerCase();
+    });
+    return {
+      employee_name: lastRecord?.employee_name || username || "Employee",
+      role: "Employee",
+      department: lastRecord?.department || "N/A",
+      salary: lastRecord?.salary || "0",
+      intime: lastRecord?.intime ? new Date(lastRecord.intime).toISOString().slice(0, 16) : "",
+      outtime: lastRecord?.outtime ? new Date(lastRecord.outtime).toISOString().slice(0, 16) : "",
+    };
+  }, [isEmployee, records, username, employeeId]);
+
+  const employeeSelectedDateRecord = useMemo(() => {
+    if (!isEmployee) return null;
+    return records.find((record) => {
+      const matchesUser =
+        employeeId
+          ? Number(record.employee_id) === employeeId
+          : String(record.employee_name || "").toLowerCase() === String(username).toLowerCase();
+      const dateSource = record.intime || record.outtime;
+      if (!matchesUser || !dateSource) return false;
+      const d = new Date(dateSource);
+      return formatLocalDate(d) === selectedDate;
+    }) || null;
+  }, [isEmployee, records, username, employeeId, selectedDate]);
+  const hasInTimeToday = Boolean(employeeSelectedDateRecord?.intime);
+  const hasOutTimeToday = Boolean(employeeSelectedDateRecord?.outtime);
+
+  const toNowIso = () => new Date().toISOString();
+
+  const handleEmployeeClockIn = async () => {
+    const now = employeeIntime ? new Date(employeeIntime).toISOString() : toNowIso();
+    if (employeeSelectedDateRecord) {
+      await patchRecord(employeeSelectedDateRecord.id, { intime: now, status: "Present" });
+      setEmployeeIntime("");
+      return;
+    }
+    await createRecord({
+      ...employeeFixedValues,
+      intime: now,
+      outtime: null,
+      status: "Present",
+    });
+    setEmployeeIntime("");
+  };
+
+  const handleEmployeeClockOut = async () => {
+    const now = employeeOuttime ? new Date(employeeOuttime).toISOString() : toNowIso();
+    if (employeeSelectedDateRecord) {
+      await patchRecord(employeeSelectedDateRecord.id, { outtime: now, status: "Present" });
+      setEmployeeOuttime("");
+      return;
+    }
+    await createRecord({
+      ...employeeFixedValues,
+      intime: null,
+      outtime: now,
+      status: "Present",
+    });
+    setEmployeeOuttime("");
+  };
 
   const stats = useMemo(() => calculateStats(filteredRecords), [filteredRecords]);
 
@@ -122,8 +203,8 @@ const Attendance = () => {
     await patchRecord(id, { status: nextStatus });
   };
 
-  const tableColumns = useMemo(
-    () => [
+  const tableColumns = useMemo(() => {
+    const baseColumns = [
       {
         key: "employee",
         label: "Employee",
@@ -193,9 +274,12 @@ const Attendance = () => {
         label: "Status",
         render: (record) => (
           <button
-            onClick={() => handleQuickStatusUpdate(record.id, record.status)}
-            className="cursor-pointer"
-            title="Click to toggle status"
+            onClick={() => {
+              if (!isEmployee) handleQuickStatusUpdate(record.id, record.status);
+            }}
+            className={isEmployee ? "cursor-not-allowed" : "cursor-pointer"}
+            title={isEmployee ? "Status updates are disabled for employees" : "Click to toggle status"}
+            disabled={isEmployee}
           >
             <Badge variant={getStatusVariant(record.status)}>
               {getStatusDisplay(record.status)}
@@ -203,7 +287,7 @@ const Attendance = () => {
           </button>
         ),
       },
-      {
+      !isEmployee && {
         key: "actions",
         label: "Actions",
         className: "w-[120px]",
@@ -211,6 +295,7 @@ const Attendance = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setEditingRecord(record)}
+              disabled={isEmployee}
               className="grid h-8 w-8 place-items-center rounded-lg border border-border hover:bg-muted"
               title="Edit"
             >
@@ -218,6 +303,7 @@ const Attendance = () => {
             </button>
             <button
               onClick={() => setDeleteConfirm(record.id)}
+              disabled={isEmployee}
               className="grid h-8 w-8 place-items-center rounded-lg border border-border hover:bg-red-50 hover:text-red-500"
               title="Delete"
             >
@@ -226,9 +312,10 @@ const Attendance = () => {
           </div>
         ),
       },
-    ],
-    []
-  );
+    ];
+
+    return baseColumns.filter(Boolean);
+  }, [isEmployee]);
 
   if (loading && records.length === 0) {
     return (
@@ -272,11 +359,62 @@ const Attendance = () => {
         title="Attendance"
         description="Track daily attendance, overtime and absences."
         actions={
-          <Button variant="brand" size="pill" icon={Plus} onClick={() => setShowForm(true)}>
-            Add Record
-          </Button>
+          !isEmployee ? (
+            <Button variant="brand" size="pill" icon={Plus} onClick={() => setShowForm(true)}>
+              Add Record
+            </Button>
+          ) : null
         }
       />
+
+      {isEmployee && (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4 md:p-6">
+          <h3 className="text-sm font-semibold mb-4">Submit Attendance</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">In Time</label>
+              <input
+                type="datetime-local"
+                value={employeeIntime}
+                onChange={(e) => setEmployeeIntime(e.target.value)}
+                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
+              />
+              <Button
+                variant="brand"
+                size="pill"
+                onClick={handleEmployeeClockIn}
+                disabled={loading || hasInTimeToday}
+                className="mt-3"
+              >
+                {hasInTimeToday ? "In Time Submitted" : "Submit In Time"}
+              </Button>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Out Time</label>
+              <input
+                type="datetime-local"
+                value={employeeOuttime}
+                onChange={(e) => setEmployeeOuttime(e.target.value)}
+                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
+              />
+              <Button
+                variant="outline"
+                size="pill"
+                onClick={handleEmployeeClockOut}
+                disabled={loading || hasOutTimeToday}
+                className="mt-3"
+              >
+                {hasOutTimeToday ? "Out Time Submitted" : "Submit Out Time"}
+              </Button>
+            </div>
+          </div>
+          {(hasInTimeToday || hasOutTimeToday) && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Selected Date: In Time {formatTime(employeeSelectedDateRecord?.intime)} | Out Time {formatTime(employeeSelectedDateRecord?.outtime)}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6 mb-6">
@@ -350,7 +488,7 @@ const Attendance = () => {
           <Button variant="outline" onClick={fetchAll} disabled={loading}>
             {loading ? "Refreshing..." : "Refresh"}
           </Button>
-          <Button variant="outline">Export Report</Button>
+          {!isEmployee && <Button variant="outline">Export Report</Button>}
         </div>
       </div>
 
@@ -368,6 +506,19 @@ const Attendance = () => {
         <AttendanceForm
           initialData={editingRecord}
           onSubmit={editingRecord ? handleUpdate : handleCreate}
+          lockedFields={
+            isEmployee
+              ? {
+                  employee_name: true,
+                  role: true,
+                  department: true,
+                  salary: true,
+                  intime: true,
+                  outtime: true,
+                }
+              : {}
+          }
+          forceValues={employeeFixedValues}
           onCancel={() => {
             setShowForm(false);
             setEditingRecord(null);

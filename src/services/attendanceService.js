@@ -2,9 +2,9 @@ import { api } from "../api/Api";
 
 const ENDPOINTS = {
   BASE: "/api/attendance/",
-  BY_ID: (id) => `/attendance/${id}/`,
-  BULK: "/attendance/bulk/",
-  STATS: "/attendance/stats/",
+  BY_ID: (id) => `/api/attendance/${id}/`,
+  BULK: "/api/attendance/bulk/",
+  STATS: "/api/attendance/stats/",
 };
 
 export const attendanceService = {
