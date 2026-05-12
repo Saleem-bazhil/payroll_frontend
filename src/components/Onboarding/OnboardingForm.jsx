@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { User, Contact, Building2, CreditCard, FileCheck, BadgePlus } from "lucide-react";
 
-const OnboardingForm = () => {
+const OnboardingForm = ({ onSubmit, onCancel, isSubmitting = false }) => {
   const [formData, setFormData] = useState({
     // 1. Basic Details
     employeeName: "",
@@ -49,8 +49,6 @@ const OnboardingForm = () => {
     skills: "", // pc, printer, both
   });
 
-  const [loading, setLoading] = useState(false);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -66,12 +64,9 @@ const OnboardingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    // Wait simulating API request
-    await new Promise(r => setTimeout(r, 1000));
-    console.log("Form Submitted:", formData);
-    alert("Employee Onboarding Form Saved Successfully!");
-    setLoading(false);
+    if (onSubmit) {
+      await onSubmit(formData);
+    }
   };
 
   const inputStyle = "w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200";
@@ -79,9 +74,16 @@ const OnboardingForm = () => {
 
   return (
     <div className="space-y-8 pb-12">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-bold tracking-tight">Employee Onboarding</h1>
-        <p className="text-sm text-muted-foreground">Complete the information form to onboard a new employee.</p>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-bold tracking-tight">Employee Onboarding Form</h1>
+          <p className="text-sm text-muted-foreground">Complete the information form to onboard a new employee.</p>
+        </div>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Back to List
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -354,11 +356,11 @@ const OnboardingForm = () => {
         </Card>
 
         <div className="flex items-center justify-end gap-4 pt-4">
-          <Button type="button" variant="outline" size="lg" className="rounded-2xl h-12 px-6 font-medium">
-            Reset Form
+          <Button type="button" variant="outline" size="lg" onClick={onCancel} className="rounded-2xl h-12 px-6 font-medium">
+            Cancel
           </Button>
-          <Button type="submit" variant="brand" size="lg" disabled={loading} className="rounded-2xl h-12 px-10 shadow-lg shadow-primary/20 font-semibold">
-            {loading ? "Submitting..." : "Submit Onboarding Form"}
+          <Button type="submit" variant="brand" size="lg" disabled={isSubmitting} className="rounded-2xl h-12 px-10 shadow-lg shadow-primary/20 font-semibold">
+            {isSubmitting ? "Submitting..." : "Submit Onboarding Form"}
           </Button>
         </div>
       </form>
