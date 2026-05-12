@@ -1,5 +1,5 @@
 import  axios  from "axios";
-import { getAccessToken } from "@/auth/rbac";
+import { clearAuth, getAccessToken, getRefreshToken, setAccessToken } from "@/auth/rbac";
 
 export const Base_URL = "http://127.0.0.1:8000";
 
@@ -17,3 +17,54 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+let isRefreshing = false;
+let queuedRequests = [];
+
+const flushQueue = (newToken) => {
+  queuedRequests.forEach((cb) => cb(newToken));
+  queuedRequests = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+
+    if (status !== 401 || originalRequest?._retry) {
+      return Promise.reject(error);
+    }
+
+    const refresh = getRefreshToken();
+    if (!refresh) {
+      clearAuth();
+      return Promise.reject(error);
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve) => {
+        queuedRequests.push((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          resolve(api(originalRequest));
+        });
+      });
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const { data } = await axios.post(`${Base_URL}/api/auth/refresh/`, { refresh });
+      setAccessToken(data.access);
+      flushQueue(data.access);
+      originalRequest.headers.Authorization = `Bearer ${data.access}`;
+      return api(originalRequest);
+    } catch (refreshError) {
+      clearAuth();
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);

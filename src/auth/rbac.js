@@ -50,8 +50,8 @@ function getRoleFromClaims(claims) {
 }
 
 export function storeAuthTokens({ access, refresh }) {
-  localStorage.setItem(ACCESS_TOKEN_KEY, access);
-  localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+  if (access) localStorage.setItem(ACCESS_TOKEN_KEY, access);
+  if (refresh) localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
   const claims = parseJwt(access);
   const role = getRoleFromClaims(claims);
   if (role) localStorage.setItem(ROLE_KEY, role);
@@ -66,6 +66,18 @@ export function clearAuth() {
 
 export function getAccessToken() {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setAccessToken(accessToken) {
+  if (!accessToken) return;
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  const claims = parseJwt(accessToken);
+  const role = getRoleFromClaims(claims);
+  if (role) localStorage.setItem(ROLE_KEY, role);
+}
+
+export function getRefreshToken() {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function getUserRole() {
