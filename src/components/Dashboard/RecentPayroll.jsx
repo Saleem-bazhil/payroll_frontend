@@ -5,11 +5,11 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 
 const recent = [
-  { name: "Sophia Chen", dept: "Engineering", amount: "$8,420", status: "Paid" },
-  { name: "Marcus Reyes", dept: "Sales", amount: "$6,180", status: "Paid" },
-  { name: "Aiko Tanaka", dept: "Design", amount: "$5,940", status: "Pending" },
-  { name: "Liam O'Brien", dept: "Operations", amount: "$4,750", status: "Paid" },
-  { name: "Priya Patel", dept: "Marketing", amount: "$5,210", status: "Processing" },
+  { name: "Sophia Chen", dept: "Engineering", amount: "₹8,420", status: "Paid" },
+  { name: "Marcus Reyes", dept: "Sales", amount: "₹6,180", status: "Paid" },
+  { name: "Aiko Tanaka", dept: "Design", amount: "₹5,940", status: "Pending" },
+  { name: "Liam O'Brien", dept: "Operations", amount: "₹4,750", status: "Paid" },
+  { name: "Priya Patel", dept: "Marketing", amount: "₹5,210", status: "Processing" },
 ];
 
 const RecentPayroll = () => {
