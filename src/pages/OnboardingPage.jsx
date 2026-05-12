@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sidebar } from "@/layout/Sidebar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import OnboardingForm from "@/components/Onboarding/OnboardingForm";
+import OnboardingManagement from "@/components/Onboarding/OnboardingManagement";
 
 const OnboardingPage = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -24,7 +24,7 @@ const OnboardingPage = () => {
           </header>
           <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-slate-50/50 dark:bg-transparent">
             <div className="max-w-[1000px] w-full mx-auto">
-              <OnboardingForm />
+              <OnboardingManagement />
             </div>
           </div>
         </main>
