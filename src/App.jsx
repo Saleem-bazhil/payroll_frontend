@@ -10,6 +10,7 @@ import ReportsPage from './pages/ReportsPage';
 import LeavePage from './pages/LeavePage';
 import LoginPage from './pages/Login';
 import UserManagementPage from './pages/UserManagementPage';
+import OnboardingPage from './pages/OnboardingPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ROLES, getDefaultRouteByRole, getUserRole, isAuthenticated } from './auth/rbac';
 // import CompliancePage from './pages/CompliancePage';
@@ -31,6 +32,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<UserManagementPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/employees" element={<EmployeePage />} />
           <Route path="/payroll" element={<PayrollPage />} />
           <Route path="/reports" element={<ReportsPage />} />
