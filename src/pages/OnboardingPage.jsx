@@ -22,8 +22,8 @@ const OnboardingPage = () => {
               <div className="font-semibold text-base">PayrollX</div>
             </div>
           </header>
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-slate-50/50 dark:bg-transparent">
-            <div className="max-w-[1000px] w-full mx-auto">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <div className="max-w-[1600px] w-full mx-auto">
               <OnboardingManagement />
             </div>
           </div>
