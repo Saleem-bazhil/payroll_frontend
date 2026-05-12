@@ -52,9 +52,9 @@ function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatsCard label="Total Payroll" value="$1.84M" delta="12.4%" icon={Wallet} accent="primary" />
+        <StatsCard label="Total Payroll" value="₹1.84M" delta="12.4%" icon={Wallet} accent="primary" />
         <StatsCard label="Total Employees" value="1,284" delta="3.2%" icon={Users} accent="info" />
-        <StatsCard label="Avg. Salary" value="$6,420" delta="2.1%" icon={TrendingUp} accent="success" />
+        <StatsCard label="Avg. Salary" value="₹6,420" delta="2.1%" icon={TrendingUp} accent="success" />
         <StatsCard label="Pending Approvals" value="18" delta="5.4%" deltaType="down" icon={Clock} accent="warning" />
       </div>
 
