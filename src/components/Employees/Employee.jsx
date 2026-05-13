@@ -25,6 +25,7 @@ const EmployeesPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [activeTab, setActiveTab] = useState("working"); // working | separated
 
   useEffect(() => {
     fetchAll();
@@ -63,6 +64,14 @@ const EmployeesPage = () => {
       })),
     [records]
   );
+
+  const filteredEmployees = useMemo(() => {
+    if (activeTab === "working") {
+      return employeeRows.filter((e) => e.status === "active" || e.status === "onleave");
+    } else {
+      return employeeRows.filter((e) => e.status === "inactive");
+    }
+  }, [employeeRows, activeTab]);
 
   const employeeStats = useMemo(() => {
     const total = employeeRows.length;
@@ -124,6 +133,29 @@ const EmployeesPage = () => {
         <StatsCard label="Inactive" value={employeeStats.inactive.toString()} delta="14%" icon={UserPlus} accent="info" />
       </div>
 
+      <div className="flex rounded-2xl overflow-hidden bg-muted/40 p-1.5 mb-6 max-w-md border border-border">
+        <button
+          onClick={() => setActiveTab("working")}
+          className={`flex-1 py-2 text-center rounded-xl text-sm font-medium transition-all duration-200 ${
+            activeTab === "working"
+              ? "bg-card text-foreground shadow-sm border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Working ({employeeStats.active + employeeStats.onLeave})
+        </button>
+        <button
+          onClick={() => setActiveTab("separated")}
+          className={`flex-1 py-2 text-center rounded-xl text-sm font-medium transition-all duration-200 ${
+            activeTab === "separated"
+              ? "bg-card text-foreground shadow-sm border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Separated ({employeeStats.inactive})
+        </button>
+      </div>
+
       <Toolbar
         onAdd={() => {
           setEditingRecord(null);
@@ -133,7 +165,7 @@ const EmployeesPage = () => {
       />
 
       <DataTable
-        data={employeeRows}
+        data={filteredEmployees}
         columns={[
           {
             key: "name", label: "Employee",
@@ -259,6 +291,8 @@ const EmployeesPage = () => {
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

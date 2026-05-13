@@ -30,18 +30,19 @@ const OnboardingForm = ({ onSubmit, onCancel, isSubmitting = false }) => {
     accountNumber: "",
     ifscCode: "",
     bankBranch: "",
+    cancelledCheque: null,
     // 5. ID Card Details
     photoSubmitted: "",
     idCardBloodGroup: "",
     // 6. Documents Submitted
     docs: {
-      aadhaar: false,
-      pan: false,
-      bankProof: false,
-      passportPhoto: false,
-      educationCert: false,
-      resume: false,
-      drivingLicense: false,
+      aadhaar: null,
+      pan: null,
+      bankProof: null,
+      passportPhoto: null,
+      educationCert: null,
+      resume: null,
+      drivingLicense: null,
     },
     // 7. Additional Info
     totalExperience: "",
@@ -54,11 +55,10 @@ const OnboardingForm = ({ onSubmit, onCancel, isSubmitting = false }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDocChange = (e) => {
-    const { name, checked } = e.target;
+  const handleDocFileChange = (name, file) => {
     setFormData((prev) => ({
       ...prev,
-      docs: { ...prev.docs, [name]: checked }
+      docs: { ...prev.docs, [name]: file }
     }));
   };
 
@@ -244,7 +244,16 @@ const OnboardingForm = ({ onSubmit, onCancel, isSubmitting = false }) => {
             </div>
             <div className="flex flex-col justify-end">
                <span className="text-xs italic text-muted-foreground mb-3">(Attach cancelled cheque / bank passbook copy)</span>
-               <input type="file" className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+               <input 
+                 type="file" 
+                 onChange={(e) => setFormData(prev => ({ ...prev, cancelledCheque: e.target.files[0] }))}
+                 className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" 
+               />
+               {formData.cancelledCheque && (
+                 <span className="text-[10px] text-emerald-600 mt-1.5 truncate max-w-[200px]" title={formData.cancelledCheque.name}>
+                   ✓ {formData.cancelledCheque.name}
+                 </span>
+               )}
             </div>
           </div>
         </Card>
@@ -282,16 +291,17 @@ const OnboardingForm = ({ onSubmit, onCancel, isSubmitting = false }) => {
           </Card>
 
           {/* Section 6: Documents Submitted */}
-          <Card>
-            <div className="flex items-center gap-3 mb-6">
+          <Card className="col-span-2 md:col-span-1">
+            <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-600 flex items-center justify-center shrink-0">
                 <FileCheck className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">6. Documents Submitted</h3>
+                <p className="text-xs text-muted-foreground">Upload scanned copies / soft copies</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mt-2">
+            <div className="space-y-3.5 mt-1 max-h-[350px] overflow-y-auto pr-2">
               {[
                 { key: "aadhaar", label: "Aadhaar Card Copy" },
                 { key: "pan", label: "PAN Card Copy" },
@@ -301,16 +311,26 @@ const OnboardingForm = ({ onSubmit, onCancel, isSubmitting = false }) => {
                 { key: "resume", label: "Resume Copy" },
                 { key: "drivingLicense", label: "Driving License" },
               ].map((doc) => (
-                <label key={doc.key} className="flex items-center p-2 rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 cursor-pointer transition-all">
-                  <input
-                    type="checkbox"
-                    name={doc.key}
-                    checked={formData.docs[doc.key]}
-                    onChange={handleDocChange}
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                <div key={doc.key} className="flex flex-col gap-1 p-2.5 rounded-xl border border-border bg-slate-50/50 dark:bg-slate-800/30">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{doc.label}</span>
+                    {formData.docs[doc.key] && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 flex items-center gap-0.5 font-medium">
+                         ✓ Selected
+                      </span>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    onChange={(e) => handleDocFileChange(doc.key, e.target.files[0])} 
+                    className="text-[11px] text-slate-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-teal-100/80 file:text-teal-700 dark:file:bg-teal-900 dark:file:text-teal-300 hover:file:bg-teal-200 dark:hover:file:bg-teal-800 cursor-pointer w-full" 
                   />
-                  <span className="ml-3 text-sm font-medium">{doc.label}</span>
-                </label>
+                  {formData.docs[doc.key] && (
+                    <div className="text-[9px] text-muted-foreground truncate font-mono mt-0.5 pl-1">
+                      {formData.docs[doc.key].name}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </Card>

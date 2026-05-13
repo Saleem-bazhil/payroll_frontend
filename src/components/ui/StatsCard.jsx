@@ -6,6 +6,8 @@ const StatsCard = ({ label, value, delta, deltaType = "up", icon: Icon, accent =
     success: "from-emerald-400 to-emerald-600",
     warning: "from-amber-400 to-orange-500",
     info: "from-cyan-400 to-blue-500",
+    danger: "from-rose-400 to-red-600",
+    muted: "from-slate-400 to-slate-600",
   };
 
   return (
