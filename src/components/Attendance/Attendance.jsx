@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X, Check 
 } from "lucide-react";
 import PageHeader from "../ui/PageHeader";
+import GreetingHeader from "../ui/GreetingHeader";
 import StatsCard from "../ui/StatsCard";
 import DataTable from "../ui/DataTable";
 import { useAttendance } from "../../customHook/useAttendance";
@@ -419,8 +420,10 @@ const Attendance = () => {
         </div>
       )}
 
+      <GreetingHeader subtitle="Track your daily check-ins, manage shifts, and view real-time attendance insights." />
+
       <PageHeader
-        title="Attendance"
+        title="Attendance Summary"
         description="Track daily attendance, overtime and absences."
         actions={
           !isEmployee ? (
