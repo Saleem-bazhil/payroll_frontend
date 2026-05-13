@@ -527,7 +527,7 @@ const Attendance = () => {
           label="Absent"
           value={stats.absent.toString()}
           icon={AlertCircle}
-          accent="primary"
+          accent="danger"
         />
         <StatsCard
           label="Overtime Hours"
