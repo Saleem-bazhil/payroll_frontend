@@ -9,16 +9,17 @@ import DepartmentSplit from './DepartmentSplit';
 import RecentPayroll from './RecentPayroll';
 import UpcomingPayment from './UpcomingPayment';
 
+import GreetingHeader from '../ui/GreetingHeader';
+
 function Dashboard() {
   return (
     <div className="space-y-6 pb-8">
+      <GreetingHeader subtitle="Manage your organization's payroll cycle, view reports, and track overall expense efficiency." />
+      
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm font-medium text-primary/80">Welcome back, Aisha</div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-bold tracking-tight">
-            Payroll <span className="text-gradient">Overview</span>
-          </h1>
-        </div>
+        <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+          Payroll <span className="text-gradient">Overview</span>
+        </h2>
         <div className="flex items-center gap-3">
             <Button variant="outline" className="hidden sm:flex">Export Report</Button>
             <Button icon={ArrowUpRight} className="w-full sm:w-auto">Run payroll</Button>
