@@ -217,7 +217,7 @@ const LeaveManagement = () => {
          <StatsCard label="Total Requests" value={stats.total} icon={CalendarDays} accent="info" />
          <StatsCard label="Pending" value={stats.pending} icon={Clock} accent="warning" />
          <StatsCard label="Approved" value={stats.approved} icon={CheckCircle2} accent="success" />
-         <StatsCard label="Rejected" value={stats.rejected} icon={XCircle} accent="primary" />
+         <StatsCard label="Rejected" value={stats.rejected} icon={XCircle} accent="danger" />
       </div>
 
       {showForm && (

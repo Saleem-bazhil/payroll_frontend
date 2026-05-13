@@ -2,20 +2,20 @@ import { motion } from "framer-motion";
 
 const StatsCard = ({ label, value, delta, deltaType = "up", icon: Icon, accent = "primary" }) => {
   const accentMap = {
-    primary: "from-[#7C4DFF] to-[#8B5CF6]",
-    success: "from-emerald-400 to-emerald-600",
-    warning: "from-amber-400 to-orange-500",
-    info: "from-cyan-400 to-blue-500",
-    danger: "from-rose-400 to-red-600",
-    muted: "from-slate-400 to-slate-600",
+    primary: "bg-primary-glow/10 text-primary-glow",
+    success: "bg-success/10 text-success",
+    warning: "bg-warning/10 text-warning",
+    info: "bg-info/10 text-info",
+    danger: "bg-destructive/10 text-destructive",
+    muted: "bg-muted-foreground/15 text-muted-foreground",
   };
 
   return (
     <motion.div whileHover={{ y: -2 }} className="glass-card rounded-3xl p-5 md:p-6 h-full flex flex-col">
       <div className="flex items-start justify-between">
         <span className="text-sm text-muted-foreground">{label}</span>
-        <div className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br ${accentMap[accent]} text-white shadow-glow`}>
-          <Icon className="h-5 w-5" />
+        <div className={`grid h-10 w-10 place-items-center rounded-2xl ${accentMap[accent]} font-medium transition-colors`}>
+          <Icon className="h-5 w-5" strokeWidth={2.2} />
         </div>
       </div>
       <div className="mt-4 text-3xl font-semibold tracking-tight">{value}</div>
