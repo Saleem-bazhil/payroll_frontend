@@ -46,10 +46,69 @@ const Attendance = () => {
     updateRecord,
     patchRecord,
     deleteRecord,
+    checkInGeo,
+    checkOutGeo,
     clearMessages,
   } = useAttendance();
 
+  const [geoLocating, setGeoLocating] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  
+  const handleGeoPunchIn = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    
+    setGeoLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          await checkInGeo({ latitude, longitude });
+        } catch (err) {
+          console.error("Geo check in error:", err);
+        } finally {
+          setGeoLocating(false);
+        }
+      },
+      (error) => {
+        setGeoLocating(false);
+        alert("Unable to retrieve your location. Please enable location permissions.");
+        console.error(error);
+      },
+      { enableHighAccuracy: true }
+    );
+  }, [checkInGeo]);
+
+  const handleGeoPunchOut = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    
+    setGeoLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          await checkOutGeo({ latitude, longitude });
+        } catch (err) {
+          console.error("Geo check out error:", err);
+        } finally {
+          setGeoLocating(false);
+        }
+      },
+      (error) => {
+        setGeoLocating(false);
+        alert("Unable to retrieve your location. Please enable location permissions.");
+        console.error(error);
+      },
+      { enableHighAccuracy: true }
+    );
+  }, [checkOutGeo]);
   const [editingRecord, setEditingRecord] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -373,61 +432,80 @@ const Attendance = () => {
       />
 
       {isEmployee && (
-        <div className="mb-6 rounded-2xl border border-border bg-card p-4 md:p-6">
-          <h3 className="text-sm font-semibold mb-4">Submit Attendance</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">In Time</label>
-              <input
-                type="datetime-local"
-                value={employeeIntime}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setEmployeeIntime(value);
-                  const day = getDatePart(value);
-                  if (day) setSelectedDate(day);
-                }}
-                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
-              />
-              <Button
-                variant="brand"
-                size="pill"
-                onClick={handleEmployeeClockIn}
-                disabled={loading || hasInTimeToday}
-                className="mt-3"
-              >
-                {hasInTimeToday ? "In Time Submitted" : "Submit In Time"}
-              </Button>
+        <div className="mb-6 rounded-3xl gradient-brand p-1 shadow-glow">
+          <div className="bg-card dark:bg-[#1A1C23] rounded-[22px] p-6 md:p-8 relative overflow-hidden">
+            
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-success">Live Location Mode</span>
+                </div>
+                <h3 className="text-xl font-bold tracking-tight mb-2">Smart Attendance Gate</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Attendance submission controls automatically unlock only when physical validation parameters confirm on-premise entry.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {(!hasInTimeToday) && (
+                  <Button
+                    variant="brand"
+                    size="lg"
+                    icon={geoLocating ? null : Timer}
+                    onClick={handleGeoPunchIn}
+                    disabled={loading || geoLocating}
+                    className="!h-14 px-8 shadow-glow-brand min-w-[180px]"
+                  >
+                    {geoLocating ? "Authorizing..." : "Secure Punch In"}
+                  </Button>
+                )}
+
+                {(hasInTimeToday && !hasOutTimeToday) && (
+                  <Button
+                    variant="brand"
+                    size="lg"
+                    icon={geoLocating ? null : Timer}
+                    onClick={handleGeoPunchOut}
+                    disabled={loading || geoLocating}
+                    className="!h-14 px-8 shadow-glow-brand min-w-[180px]"
+                  >
+                    {geoLocating ? "Authorizing..." : "Secure Punch Out"}
+                  </Button>
+                )}
+
+                {(hasInTimeToday && hasOutTimeToday) && (
+                  <div className="flex items-center gap-2 px-6 py-3 bg-success/10 text-success rounded-2xl font-medium border border-success/20">
+                    <CheckCircle2 className="h-5 w-5" />
+                    Schedule Completed for Today
+                  </div>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">Out Time</label>
-              <input
-                type="datetime-local"
-                value={employeeOuttime}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setEmployeeOuttime(value);
-                  const day = getDatePart(value);
-                  if (day) setSelectedDate(day);
-                }}
-                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
-              />
-              <Button
-                variant="outline"
-                size="pill"
-                onClick={handleEmployeeClockOut}
-                disabled={loading || hasOutTimeToday}
-                className="mt-3"
-              >
-                {hasOutTimeToday ? "Out Time Submitted" : "Submit Out Time"}
-              </Button>
-            </div>
+
+            {employeeSelectedDateRecord && (
+              <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50 relative z-10">
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Shift Entry</p>
+                  <p className="font-semibold">{formatTime(employeeSelectedDateRecord.intime) || "-- : --"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Shift Exit</p>
+                  <p className="font-semibold">{formatTime(employeeSelectedDateRecord.outtime) || "-- : --"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Status</p>
+                  <Badge variant={getStatusVariant(employeeSelectedDateRecord.status)} className="mt-0.5">
+                    {getStatusDisplay(employeeSelectedDateRecord.status)}
+                  </Badge>
+                </div>
+                <div>
+                   <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Location Verification</p>
+                   <p className="text-xs text-emerald-500 font-medium flex items-center gap-1 mt-1"><Check className="h-3.5 w-3.5" /> Confirmed</p>
+                </div>
+              </div>
+            )}
           </div>
-          {(hasInTimeToday || hasOutTimeToday) && (
-            <p className="text-xs text-muted-foreground mt-3">
-              Selected Date: In Time {formatTime(employeeSelectedDateRecord?.intime)} | Out Time {formatTime(employeeSelectedDateRecord?.outtime)}
-            </p>
-          )}
         </div>
       )}
 
