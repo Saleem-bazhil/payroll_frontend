@@ -16,25 +16,25 @@ const initialFormState = {
   work_lat: "",
   work_lon: "",
   // Detailed breakdown defaults
-  basic: "0",
-  hra: "0",
-  conveyance: "0",
-  child_edu: "0",
-  personal_allowance: "0",
-  incentive: "0",
-  other_earnings: "0",
-  epf: "0",
-  esi: "0",
-  prof_tax: "0",
-  lwf: "0",
-  staff_advance: "0",
-  tds: "0",
-  other_deduction: "0",
-  deduction_insurance: "0",
-  employer_epf: "0",
-  employer_esi: "0",
-  employer_insurance: "0",
-  petrol_allowance: "0",
+  basic: "",
+  hra: "",
+  conveyance: "",
+  child_edu: "",
+  personal_allowance: "",
+  incentive: "",
+  other_earnings: "",
+  epf: "",
+  esi: "",
+  prof_tax: "",
+  lwf: "",
+  staff_advance: "",
+  tds: "",
+  other_deduction: "",
+  deduction_insurance: "",
+  employer_epf: "",
+  employer_esi: "",
+  employer_insurance: "",
+  petrol_allowance: "",
 };
 
 const STATUS_OPTIONS = [
@@ -50,6 +50,16 @@ const BRANCH_OPTIONS = [
   { value: "Kanchipuram", label: "Kanchipuram" },
   { value: "Hosur", label: "Hosur" },
 ];
+
+const formatForInput = (val) => {
+  if (val === null || val === undefined || parseFloat(val) === 0) return "";
+  return val.toString();
+};
+
+const parseVal = (val) => {
+  const num = parseFloat(val);
+  return isNaN(num) ? 0 : num;
+};
 
 const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false }) => {
   const [formData, setFormData] = useState(initialFormState);
@@ -74,25 +84,25 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
         status: initialData.status || "active",
         work_lat: initialData.work_lat || "",
         work_lon: initialData.work_lon || "",
-        basic: initialData.basic || "0",
-        hra: initialData.hra || "0",
-        conveyance: initialData.conveyance || "0",
-        child_edu: initialData.child_edu || "0",
-        personal_allowance: initialData.personal_allowance || "0",
-        incentive: initialData.incentive || "0",
-        other_earnings: initialData.other_earnings || "0",
-        epf: initialData.epf || "0",
-        esi: initialData.esi || "0",
-        prof_tax: initialData.prof_tax || "0",
-        lwf: initialData.lwf || "0",
-        staff_advance: initialData.staff_advance || "0",
-        tds: initialData.tds || "0",
-        other_deduction: initialData.other_deduction || "0",
-        deduction_insurance: initialData.deduction_insurance || "0",
-        employer_epf: initialData.employer_epf || "0",
-        employer_esi: initialData.employer_esi || "0",
-        employer_insurance: initialData.employer_insurance || "0",
-        petrol_allowance: initialData.petrol_allowance || "0",
+        basic: formatForInput(initialData.basic),
+        hra: formatForInput(initialData.hra),
+        conveyance: formatForInput(initialData.conveyance),
+        child_edu: formatForInput(initialData.child_edu),
+        personal_allowance: formatForInput(initialData.personal_allowance),
+        incentive: formatForInput(initialData.incentive),
+        other_earnings: formatForInput(initialData.other_earnings),
+        epf: formatForInput(initialData.epf),
+        esi: formatForInput(initialData.esi),
+        prof_tax: formatForInput(initialData.prof_tax),
+        lwf: formatForInput(initialData.lwf),
+        staff_advance: formatForInput(initialData.staff_advance),
+        tds: formatForInput(initialData.tds),
+        other_deduction: formatForInput(initialData.other_deduction),
+        deduction_insurance: formatForInput(initialData.deduction_insurance),
+        employer_epf: formatForInput(initialData.employer_epf),
+        employer_esi: formatForInput(initialData.employer_esi),
+        employer_insurance: formatForInput(initialData.employer_insurance),
+        petrol_allowance: formatForInput(initialData.petrol_allowance),
       });
     } else {
       setFormData(initialFormState);
@@ -107,6 +117,20 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = { ...formData };
+
+    const numericalFields = [
+      "basic", "hra", "conveyance", "child_edu", "personal_allowance",
+      "incentive", "other_earnings", "epf", "esi", "prof_tax", "lwf",
+      "staff_advance", "tds", "other_deduction", "deduction_insurance",
+      "employer_epf", "employer_esi", "employer_insurance", "petrol_allowance"
+    ];
+
+    numericalFields.forEach(field => {
+      if (payload[field] === "" || payload[field] === null || payload[field] === undefined) {
+        payload[field] = "0";
+      }
+    });
+
     if (payload.user === "") {
       payload.user = null;
     }
@@ -115,36 +139,36 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
 
   // Spreadsheet Image Calculations (Base Data)
   const grossSumA = (
-    parseFloat(formData.basic || 0) +
-    parseFloat(formData.hra || 0) +
-    parseFloat(formData.conveyance || 0) +
-    parseFloat(formData.child_edu || 0) +
-    parseFloat(formData.personal_allowance || 0) +
-    parseFloat(formData.incentive || 0) +
-    parseFloat(formData.other_earnings || 0)
+    parseVal(formData.basic) +
+    parseVal(formData.hra) +
+    parseVal(formData.conveyance) +
+    parseVal(formData.child_edu) +
+    parseVal(formData.personal_allowance) +
+    parseVal(formData.incentive) +
+    parseVal(formData.other_earnings)
   ).toFixed(2);
 
   const totalDeductionB = (
-    parseFloat(formData.epf || 0) +
-    parseFloat(formData.esi || 0) +
-    parseFloat(formData.deduction_insurance || 0) +
-    parseFloat(formData.prof_tax || 0) +
-    parseFloat(formData.lwf || 0) +
-    parseFloat(formData.staff_advance || 0) +
-    parseFloat(formData.tds || 0) +
-    parseFloat(formData.other_deduction || 0)
+    parseVal(formData.epf) +
+    parseVal(formData.esi) +
+    parseVal(formData.deduction_insurance) +
+    parseVal(formData.prof_tax) +
+    parseVal(formData.lwf) +
+    parseVal(formData.staff_advance) +
+    parseVal(formData.tds) +
+    parseVal(formData.other_deduction)
   ).toFixed(2);
 
-  const netSalary = (parseFloat(grossSumA) - parseFloat(totalDeductionB)).toFixed(2);
+  const netSalary = (parseVal(grossSumA) - parseVal(totalDeductionB)).toFixed(2);
 
   const totalBenefitsC = (
-    parseFloat(formData.employer_epf || 0) +
-    parseFloat(formData.employer_esi || 0) +
-    parseFloat(formData.employer_insurance || 0) +
-    parseFloat(formData.petrol_allowance || 0)
+    parseVal(formData.employer_epf) +
+    parseVal(formData.employer_esi) +
+    parseVal(formData.employer_insurance) +
+    parseVal(formData.petrol_allowance)
   ).toFixed(2);
 
-  const totalCTC = (parseFloat(grossSumA) + parseFloat(totalBenefitsC)).toFixed(2);
+  const totalCTC = (parseVal(grossSumA) + parseVal(totalBenefitsC)).toFixed(2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
