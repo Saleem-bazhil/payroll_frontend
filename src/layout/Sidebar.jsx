@@ -155,4 +155,3 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   );
 }
 
-export { nav as sidebarNav };

@@ -2,7 +2,15 @@ import React from 'react'
 import { Card } from "@/components/ui/Card"
 import { Calendar } from "lucide-react"
 
-const UpcomingPayment = () => {
+const UpcomingPayment = ({ data }) => {
+  const displayData = data || {
+    totalToDisburse: "₹0",
+    date: "End of month",
+    daysLeft: "Pending",
+    employees: "0",
+    avgPayout: "₹0"
+  };
+
   return (
     <Card className="p-5 md:p-6 h-full flex flex-col">
       <div className="flex items-center gap-4 mb-6">
@@ -20,14 +28,14 @@ const UpcomingPayment = () => {
             <Calendar className="h-16 w-16 -mr-4 -mt-4" />
         </div>
         <div className="text-[11px] uppercase tracking-[0.1em] font-bold opacity-80">Total to disburse</div>
-        <div className="text-3xl font-bold mt-2 tracking-tight">₹184,520.00</div>
+        <div className="text-3xl font-bold mt-2 tracking-tight">{displayData.totalToDisburse}</div>
         <div className="mt-6 flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-            <span className="font-medium opacity-90">Nov 30, 2025</span>
+            <span className="font-medium opacity-90">{displayData.date}</span>
           </div>
           <span className="rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider">
-            In 4 days
+            {displayData.daysLeft}
           </span>
         </div>
       </div>
@@ -35,11 +43,11 @@ const UpcomingPayment = () => {
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div className="rounded-2xl border border-border/50 bg-muted/30 p-4 transition-colors hover:bg-muted/50">
           <div className="text-xs font-medium text-muted-foreground">Employees</div>
-          <div className="text-xl font-bold mt-1">1,284</div>
+          <div className="text-xl font-bold mt-1">{displayData.employees}</div>
         </div>
         <div className="rounded-2xl border border-border/50 bg-muted/30 p-4 transition-colors hover:bg-muted/50">
           <div className="text-xs font-medium text-muted-foreground">Avg. payout</div>
-          <div className="text-xl font-bold mt-1">₹6,420</div>
+          <div className="text-xl font-bold mt-1">{displayData.avgPayout}</div>
         </div>
       </div>
     </Card>

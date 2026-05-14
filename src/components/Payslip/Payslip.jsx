@@ -1,67 +1,611 @@
+import { useState, useEffect } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import PageHeader from "../ui/PageHeader";
 import Toolbar from "../ui/Toolbar";
 import DataTable from "../ui/DataTable";
-import { Download, Eye, FileText, Sparkles } from "lucide-react";
-
-const slips = [
-  { name: "Sophia Chen", id: "PSL-1142", period: "Nov 2025", amount: "₹8,420", status: "Generated" },
-  { name: "Marcus Reyes", id: "PSL-1143", period: "Nov 2025", amount: "₹6,180", status: "Generated" },
-  { name: "Aiko Tanaka", id: "PSL-1144", period: "Nov 2025", amount: "₹5,940", status: "Pending" },
-  { name: "Liam O'Brien", id: "PSL-1145", period: "Nov 2025", amount: "₹4,750", status: "Generated" },
-  { name: "Priya Patel", id: "PSL-1146", period: "Nov 2025", amount: "₹5,210", status: "Pending" },
-  { name: "Diego Alvarez", id: "PSL-1147", period: "Nov 2025", amount: "₹7,830", status: "Generated" },
-];
+import { Download, Eye, Sparkles, Loader2, Printer } from "lucide-react";
+import { api } from "@/api/Api";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 const PayslipsPage = () => {
+  const [slips, setSlips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [selectedSlip, setSelectedSlip] = useState(null);
+
+  const fetchPayslips = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/api/payslips/");
+      setSlips(res.data);
+    } catch (err) {
+      console.error("Failed to fetch payslips:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayslips();
+  }, []);
+
+  const handleGenerateAll = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const res = await api.post("/api/payslips/generate_all/");
+      alert(res.data?.message || "Successfully processed payslips!");
+      fetchPayslips();
+    } catch (err) {
+      console.error("Failed to generate payslips:", err);
+      alert("Failed to generate payslips. Please ensure active employees exist.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const getMonthLabel = (monthNum) => {
+    const months = [
+      "January", "February", "March", "April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+    return months[monthNum - 1] || monthNum;
+  };
+
+  const formatINR = (amount) => {
+    if (!amount) return "0.00";
+    return parseFloat(amount).toLocaleString("en-IN", { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  };
+
+  // Bulletproof Direct Print Engine: Clones target HTML inside a hidden iframe and triggers browser printing.
+  // This isolates styles perfectly and prevents styles leakage or unaligned outputs when saving as PDF!
+  const handlePrintIframe = () => {
+    const printableElement = document.getElementById("printable-payslip-core");
+    if (!printableElement) return;
+
+    // 1. Remove existing printing frame if exists
+    let frame = document.getElementById("hidden-printing-iframe");
+    if (frame) document.body.removeChild(frame);
+
+    // 2. Create new isolated frame
+    frame = document.createElement("iframe");
+    frame.id = "hidden-printing-iframe";
+    frame.style.position = "absolute";
+    frame.style.width = "0px";
+    frame.style.height = "0px";
+    frame.style.border = "none";
+    frame.style.left = "-9999px";
+    
+    document.body.appendChild(frame);
+    const doc = frame.contentWindow.document;
+
+    // 3. Write basic standard HTML structure with explicit printing CSS directives
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Employee Payslip</title>
+          <style>
+            @page {
+              size: portrait;
+              margin: 12mm 8mm 12mm 8mm;
+            }
+            body {
+              font-family: 'Times New Roman', Times, serif;
+              color: #000;
+              background-color: #fff;
+              margin: 0;
+              padding: 0;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              box-sizing: border-box;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            th, td {
+              padding: 4px 6px;
+              border: 1px solid #000;
+              font-size: 11px;
+            }
+            .text-right {
+              text-align: right;
+            }
+            .text-center {
+              text-align: center;
+            }
+            .font-bold {
+              font-weight: bold;
+            }
+            .bg-gray {
+              background-color: #f3f4f6 !important;
+            }
+          </style>
+        </head>
+        <body>
+          <div style="width: 100%; padding: 0px; display: flex; justify-content: center;">
+            ${printableElement.outerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    
+    doc.close();
+
+    // 4. Fire command once parsed and loaded
+    frame.contentWindow.focus();
+    setTimeout(() => {
+      frame.contentWindow.print();
+    }, 350);
+  };
+
+  // Table Constants to maintain absolute alignment regardless of layout or environment.
+  const tableMainStyle = {
+    width: "100%",
+    maxWidth: "780px",
+    border: "4px solid #000",
+    borderCollapse: "collapse",
+    fontFamily: "'Times New Roman', serif",
+    fontSize: "11.5px",
+    color: "#000",
+    backgroundColor: "#fff",
+    margin: "0 auto",
+    lineHeight: "1.3"
+  };
+
+  const tdStyle = {
+    border: "1px solid #000",
+    padding: "5px 7px",
+    verticalAlign: "middle"
+  };
+
+  const labelStyle = {
+    ...tdStyle,
+    fontWeight: "bold",
+    backgroundColor: "#f9fafb",
+    width: "18%"
+  };
+
+  const valStyle = {
+    ...tdStyle,
+    width: "32%"
+  };
+
   return (
     <div>
       <PageHeader
         title="Payslips"
         description="Generate, preview and distribute payslips."
-        actions={<Button icon={Sparkles}>Generate all</Button>}
+        actions={
+          <Button 
+            icon={generating ? Loader2 : Sparkles} 
+            onClick={handleGenerateAll}
+            disabled={generating}
+            className={generating ? "opacity-80 pointer-events-none" : ""}
+          >
+            {generating ? "Generating..." : "Generate all"}
+          </Button>
+        }
       />
 
       <Toolbar />
 
-      <DataTable
-        data={slips}
-        columns={[
-          {
-            key: "name", label: "Employee",
-            render: (s) => (
-              <div className="flex items-center gap-3">
-                <Avatar name={s.name} />
-                <div>
-                  <div className="text-sm font-medium">{s.name}</div>
-                  <div className="text-xs text-muted-foreground">{s.id}</div>
+      {loading ? (
+        <div className="flex h-64 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Retrieving employee records...</p>
+        </div>
+      ) : (
+        <DataTable
+          data={slips}
+          columns={[
+            {
+              key: "name", 
+              label: "Employee",
+              render: (s) => (
+                <div className="flex items-center gap-3">
+                  <Avatar name={s.employee_details?.employee_name || "Emp"} />
+                  <div>
+                    <div className="text-sm font-medium">{s.employee_details?.employee_name || "Unknown"}</div>
+                    <div className="text-xs text-muted-foreground">{s.employee_details?.role || "N/A"}</div>
+                  </div>
+                </div>
+              ),
+            },
+            { 
+              key: "period", 
+              label: "Period", 
+              render: (s) => <span className="text-sm font-medium">{getMonthLabel(s.month).substring(0, 3)} {s.year}</span> 
+            },
+            { 
+              key: "amount", 
+              label: "Net Salary", 
+              render: (s) => (
+                <span className="text-sm font-bold tracking-tight text-foreground">
+                  ₹{parseFloat(s.net_salary).toLocaleString("en-IN")}
+                </span>
+              ) 
+            },
+            {
+              key: "status", 
+              label: "Status",
+              render: (s) => {
+                let variant = "warning";
+                if (s.status === "Generated") variant = "success";
+                if (s.status === "Paid") variant = "info";
+                return <Badge variant={variant}>{s.status}</Badge>;
+              },
+            },
+            {
+              key: "act", 
+              label: "",
+              render: (s) => (
+                <div className="flex items-center justify-end gap-2">
+                  <button 
+                    onClick={() => setSelectedSlip(s)}
+                    title="View Details" 
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <button 
+                    onClick={() => setSelectedSlip(s)}
+                    title="Download/Print" 
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <Download className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+        />
+      )}
+
+      {/* Full-Width Landscape Dialog Panel */}
+      <Dialog open={!!selectedSlip} onOpenChange={(open) => !open && setSelectedSlip(null)}>
+        <DialogContent className="sm:max-w-[95vw] md:max-w-[860px] w-full p-0 max-h-[95vh] overflow-y-auto bg-background border-border shadow-2xl rounded-xl flex flex-col">
+          {selectedSlip && (
+            <>
+              {/* Top Control Action Bar */}
+              <div className="flex items-center justify-between border-b border-border px-6 py-4 sticky top-0 bg-background/95 backdrop-blur-md z-20 rounded-t-xl flex-shrink-0">
+                <div className="flex flex-col">
+                  <h3 className="text-base font-semibold tracking-tight text-foreground">Employee Payslip</h3>
+                  <p className="text-xs text-muted-foreground">{selectedSlip.employee_details?.employee_name} - {getMonthLabel(selectedSlip.month)} {selectedSlip.year}</p>
+                </div>
+                <div className="flex items-center gap-3 pr-8">
+                  <Button variant="brand" size="sm" icon={Printer} onClick={handlePrintIframe}>
+                    Download / Print PDF
+                  </Button>
                 </div>
               </div>
-            ),
-          },
-          { key: "period", label: "Period", render: (s) => <span className="text-sm">{s.period}</span> },
-          { key: "amount", label: "Amount", render: (s) => <span className="text-sm font-semibold">{s.amount}</span> },
-          {
-            key: "status", label: "Status",
-            render: (s) => <Badge variant={s.status === "Generated" ? "success" : "warning"}>{s.status}</Badge>,
-          },
-          {
-            key: "act", label: "",
-            render: () => (
-              <div className="flex items-center justify-end gap-2">
-                <button className="grid h-8 w-8 place-items-center rounded-lg border border-border hover:bg-muted">
-                  <Eye className="h-4 w-4" />
-                </button>
-                <button className="grid h-8 w-8 place-items-center rounded-lg border border-border hover:bg-muted">
-                  <Download className="h-4 w-4" />
-                </button>
+
+              {/* Responsive preview container */}
+              <div className="flex-grow p-4 md:p-8 overflow-auto bg-muted/20 flex justify-center items-start min-h-0">
+                
+                {/* 
+                  Pure HTML Table Implementation: 
+                  This guarantees 100% perfect layout, borders, alignment, and styling preserved 
+                  whether on-screen, in smaller windows, or exported via PDF print engine!
+                */}
+                <div 
+                  id="printable-payslip-core" 
+                  style={{ 
+                    padding: "3px", 
+                    backgroundColor: "#fff", 
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)", 
+                    width: "100%", 
+                    maxWidth: "760px" 
+                  }}
+                >
+                  <table style={tableMainStyle}>
+                    
+                    {/* Header Section */}
+                    <tbody>
+                      <tr>
+                        <td colSpan="4" style={{ ...tdStyle, padding: "10px", textAlign: "center", position: "relative" }}>
+                          <div style={{ textAlign: "right", fontSize: "8.5px", fontWeight: "bold", position: "absolute", top: "5px", right: "5px", fontFamily: "sans-serif" }}>
+                            PRIVATE & CONFIDENTIAL
+                          </div>
+                          <div style={{ fontSize: "22px", fontWeight: "900", color: "#1e3a8a", fontFamily: "sans-serif", letterSpacing: "0.5px" }}>
+                            Renderways <span style={{ color: "#db2777" }}>Technology</span> Pvt Ltd
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#1e3a8a", marginTop: "2px", fontFamily: "sans-serif" }}>
+                            #25, 1st Floor, Gandhi Street, Mettukuppam, Maduravoyal, Chennai 600 095.
+                          </div>
+                          <div style={{ fontSize: "11.5px", fontWeight: "bold", marginTop: "4px" }}>
+                            Pay Slip Cum Leave Card for the month of {getMonthLabel(selectedSlip.month)} {selectedSlip.year}
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Meta Info Row 1 */}
+                      <tr>
+                        <td style={labelStyle}>Employee Name</td>
+                        <td style={{ ...valStyle, textTransform: "uppercase", fontWeight: "bold" }}>{selectedSlip.employee_details?.employee_name || "GAYATHRI R"}</td>
+                        <td style={labelStyle}>Employee Code</td>
+                        <td style={{ ...valStyle, fontFamily: "monospace" }}>RT-{100 + selectedSlip.employee_details?.id}</td>
+                      </tr>
+
+                      {/* Meta Info Row 2 */}
+                      <tr>
+                        <td style={labelStyle}>DOJ</td>
+                        <td style={valStyle}>{selectedSlip.employee_details?.joining_date || "01-06-2025"}</td>
+                        <td style={labelStyle}>DOB</td>
+                        <td style={valStyle}>30-12-2000</td>
+                      </tr>
+
+                      {/* Meta Info Row 3 */}
+                      <tr>
+                        <td style={labelStyle}>Department</td>
+                        <td style={valStyle}>{selectedSlip.employee_details?.department || "Admin"}</td>
+                        <td style={labelStyle}>Pan No.</td>
+                        <td style={{ ...valStyle, fontFamily: "monospace" }}>PANEX-{selectedSlip.employee_details?.id}</td>
+                      </tr>
+
+                      {/* Meta Info Row 4 */}
+                      <tr>
+                        <td style={labelStyle}>Designation</td>
+                        <td style={valStyle}>{selectedSlip.employee_details?.role || "Manager"}</td>
+                        <td style={labelStyle}>Paymode</td>
+                        <td style={valStyle}>Bank Transfer</td>
+                      </tr>
+
+                      {/* Meta Info Row 5 */}
+                      <tr>
+                        <td style={labelStyle}>Location</td>
+                        <td style={valStyle}>Tamilnadu</td>
+                        <td style={labelStyle}>Bank Name</td>
+                        <td style={valStyle}>IndusInd Bank</td>
+                      </tr>
+
+                      {/* Meta Info Row 6 */}
+                      <tr>
+                        <td style={labelStyle}>Region</td>
+                        <td style={valStyle}>{selectedSlip.employee_details?.branch || "Chennai"}</td>
+                        <td style={labelStyle}>Bank Account No</td>
+                        <td style={{ ...valStyle, fontFamily: "monospace" }}>******4933</td>
+                      </tr>
+
+                      {/* Meta Info Row 7 */}
+                      <tr>
+                        <td style={labelStyle}>PF Number</td>
+                        <td style={valStyle}>-</td>
+                        <td style={labelStyle}>ESI Number</td>
+                        <td style={valStyle}>-</td>
+                      </tr>
+
+                      {/* Meta Info Row 8 */}
+                      <tr>
+                        <td style={labelStyle}>UAN Number</td>
+                        <td style={valStyle}>-</td>
+                        <td style={labelStyle}>CTC</td>
+                        <td style={{ ...valStyle, fontWeight: "bold" }}>₹{formatINR(selectedSlip.gross_salary)}</td>
+                      </tr>
+
+                      {/* Leave Matrix Complex Grid Row */}
+                      <tr>
+                        <td colSpan="4" style={{ padding: "0", border: "none" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <tbody>
+                              <tr>
+                                {/* Left header */}
+                                <td style={{ ...tdStyle, width: "20%", fontWeight: "bold", backgroundColor: "#f9fafb", textAlign: "center" }}>
+                                  Leave Days
+                                </td>
+                                
+                                {/* Middle Matrix table */}
+                                <td style={{ padding: "0", width: "50%" }}>
+                                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                    <tbody>
+                                      <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "bold", textAlign: "center" }}>
+                                        <td style={{ ...tdStyle, width: "33.33%" }}>Ope Bal</td>
+                                        <td style={{ ...tdStyle, width: "33.33%" }}>Avl Bal</td>
+                                        <td style={tdStyle}>Clo Bal</td>
+                                      </tr>
+                                      <tr style={{ textAlign: "center", fontSize: "10px" }}>
+                                        <td style={{ padding: "0" }}>
+                                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                            <tbody>
+                                              <tr><td style={{ border: "none", borderRight: "1px solid #000", borderBottom: "1px solid #000", padding: "2px", width: "33%" }}>CL</td><td style={{ border: "none", borderRight: "1px solid #000", borderBottom: "1px solid #000", padding: "2px", width: "33%" }}>SL</td><td style={{ border: "none", borderBottom: "1px solid #000", padding: "2px" }}>EL</td></tr>
+                                              <tr><td style={{ border: "none", borderRight: "1px solid #000", padding: "2px", width: "33%" }}>12.0</td><td style={{ border: "none", borderRight: "1px solid #000", padding: "2px", width: "33%" }}>0.0</td><td style={{ border: "none", padding: "2px" }}>0.0</td></tr>
+                                            </tbody>
+                                          </table>
+                                        </td>
+                                        <td style={{ padding: "0" }}>
+                                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                            <tbody>
+                                              <tr><td style={{ border: "none", borderRight: "1px solid #000", borderBottom: "1px solid #000", padding: "2px", width: "33%" }}>CL</td><td style={{ border: "none", borderRight: "1px solid #000", borderBottom: "1px solid #000", padding: "2px", width: "33%" }}>SL</td><td style={{ border: "none", borderBottom: "1px solid #000", padding: "2px" }}>EL</td></tr>
+                                              <tr><td style={{ border: "none", borderRight: "1px solid #000", padding: "2px", width: "33%" }}>10.0</td><td style={{ border: "none", borderRight: "1px solid #000", padding: "2px", width: "33%" }}>0.0</td><td style={{ border: "none", padding: "2px" }}>0.0</td></tr>
+                                            </tbody>
+                                          </table>
+                                        </td>
+                                        <td style={{ padding: "0" }}>
+                                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                            <tbody>
+                                              <tr><td style={{ border: "none", borderRight: "1px solid #000", borderBottom: "1px solid #000", padding: "2px", width: "33%" }}>CL</td><td style={{ border: "none", borderRight: "1px solid #000", borderBottom: "1px solid #000", padding: "2px", width: "33%" }}>SL</td><td style={{ border: "none", borderBottom: "1px solid #000", padding: "2px" }}>EL</td></tr>
+                                              <tr><td style={{ border: "none", borderRight: "1px solid #000", padding: "2px", width: "33%" }}>2.0</td><td style={{ border: "none", borderRight: "1px solid #000", padding: "2px", width: "33%" }}>0.0</td><td style={{ border: "none", padding: "2px" }}>0.0</td></tr>
+                                            </tbody>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+
+                                {/* Right totals block */}
+                                <td style={{ padding: "0", width: "30%" }}>
+                                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                    <tbody>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#f3f4f6", width: "60%" }}>Total Days</td>
+                                        <td style={{ ...tdStyle, textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{selectedSlip.total_days}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", color: "#dc2626", backgroundColor: "#fef2f2" }}>No of Lop Days</td>
+                                        <td style={{ ...tdStyle, textAlign: "center", color: "#dc2626", fontFamily: "monospace", fontWeight: "bold" }}>{parseFloat(selectedSlip.lop_days).toFixed(1)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#f3f4f6" }}>No of Days</td>
+                                        <td style={{ ...tdStyle, textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{parseFloat(selectedSlip.paid_days).toFixed(1)}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      {/* Main Split Column Row: Earnings (60%) and Deductions (40%) */}
+                      <tr>
+                        <td colSpan="4" style={{ padding: "0", border: "none" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                            <tbody>
+                              <tr>
+                                {/* Earnings SubTable Cell */}
+                                <td style={{ padding: "0", width: "66.66%", verticalAlign: "top", borderRight: "1px solid #000" }}>
+                                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                    <thead>
+                                      <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "bold", textAlign: "center" }}>
+                                        <td style={{ ...tdStyle, width: "40%" }}>Salary/Wages</td>
+                                        <td style={{ ...tdStyle, width: "30%" }}>Gross Salary</td>
+                                        <td style={tdStyle}>Gross Earnings</td>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Basic</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_basic)}</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", fontWeight: "bold" }}>{formatINR(selectedSlip.earned_basic)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>HRA</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_hra)}</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", fontWeight: "bold" }}>{formatINR(selectedSlip.earned_hra)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Conveyance</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_conveyance)}</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", fontWeight: "bold" }}>{formatINR(selectedSlip.earned_conveyance)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Child Edu Allowance</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_child_edu)}</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", fontWeight: "bold" }}>{formatINR(selectedSlip.earned_child_edu)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Personal Allowance</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_personal_allowance)}</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", fontWeight: "bold" }}>{formatINR(selectedSlip.earned_personal_allowance)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Incentive</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Other Earnings</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "900", fontSize: "12px" }}>
+                                        <td style={tdStyle}>Gross Salary / Earnings</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_salary)}</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{formatINR(selectedSlip.gross_earnings)}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+
+                                {/* Deductions SubTable Cell */}
+                                <td style={{ padding: "0", width: "33.33%", verticalAlign: "top" }}>
+                                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                    <thead>
+                                      <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "bold", textAlign: "center" }}>
+                                        <td style={{ ...tdStyle, width: "60%" }}>Gross Deduction</td>
+                                        <td style={tdStyle}>Amount</td>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>EPF (12%)</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c", fontWeight: "bold" }}>{formatINR(selectedSlip.deduction_epf)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>ESI</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>Professional Tax</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c", fontWeight: "bold" }}>{formatINR(selectedSlip.deduction_prof_tax)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>LWF</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>Staff Advance</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>TDS</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>Other Deduction</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                      </tr>
+                                      <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "900", fontSize: "12px" }}>
+                                        <td style={tdStyle}>Total Deductions</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{formatINR(selectedSlip.gross_deductions)}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      {/* Net Take Home Row */}
+                      <tr style={{ backgroundColor: "#111827", color: "#fff", fontWeight: "900" }}>
+                        <td colSpan="3" style={{ ...tdStyle, border: "none", padding: "10px 15px", fontSize: "13.5px", letterSpacing: "0.5px" }}>
+                          NET TAKE HOME SALARY
+                        </td>
+                        <td style={{ ...tdStyle, border: "none", textAlign: "right", padding: "10px 15px", fontSize: "20px", fontFamily: "sans-serif", color: "#4ade80" }}>
+                          ₹{parseFloat(selectedSlip.net_salary).toLocaleString("en-IN")}
+                        </td>
+                      </tr>
+
+                      {/* Print Footer */}
+                      <tr style={{ backgroundColor: "#fafafa", color: "#6b7280" }}>
+                        <td colSpan="4" style={{ ...tdStyle, borderTop: "2px solid #000", textAlign: "center", fontSize: "9.5px", fontWeight: "bold", fontStyle: "italic" }}>
+                          ** This is a computer generated salary slip, signature is not required **
+                        </td>
+                      </tr>
+
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            ),
-          },
-        ]}
-      />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
