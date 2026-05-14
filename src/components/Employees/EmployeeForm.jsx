@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { useUsers } from "@/customHook/useUsers";
 
 const initialFormState = {
@@ -15,6 +15,26 @@ const initialFormState = {
   status: "active",
   work_lat: "",
   work_lon: "",
+  // Detailed breakdown defaults
+  basic: "0",
+  hra: "0",
+  conveyance: "0",
+  child_edu: "0",
+  personal_allowance: "0",
+  incentive: "0",
+  other_earnings: "0",
+  epf: "0",
+  esi: "0",
+  prof_tax: "0",
+  lwf: "0",
+  staff_advance: "0",
+  tds: "0",
+  other_deduction: "0",
+  deduction_insurance: "0",
+  employer_epf: "0",
+  employer_esi: "0",
+  employer_insurance: "0",
+  petrol_allowance: "0",
 };
 
 const STATUS_OPTIONS = [
@@ -33,6 +53,7 @@ const BRANCH_OPTIONS = [
 
 const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false }) => {
   const [formData, setFormData] = useState(initialFormState);
+  const [showPayslipSettings, setShowPayslipSettings] = useState(false);
   const { records: users, fetchAll: fetchUsers } = useUsers();
 
   useEffect(() => {
@@ -53,6 +74,25 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
         status: initialData.status || "active",
         work_lat: initialData.work_lat || "",
         work_lon: initialData.work_lon || "",
+        basic: initialData.basic || "0",
+        hra: initialData.hra || "0",
+        conveyance: initialData.conveyance || "0",
+        child_edu: initialData.child_edu || "0",
+        personal_allowance: initialData.personal_allowance || "0",
+        incentive: initialData.incentive || "0",
+        other_earnings: initialData.other_earnings || "0",
+        epf: initialData.epf || "0",
+        esi: initialData.esi || "0",
+        prof_tax: initialData.prof_tax || "0",
+        lwf: initialData.lwf || "0",
+        staff_advance: initialData.staff_advance || "0",
+        tds: initialData.tds || "0",
+        other_deduction: initialData.other_deduction || "0",
+        deduction_insurance: initialData.deduction_insurance || "0",
+        employer_epf: initialData.employer_epf || "0",
+        employer_esi: initialData.employer_esi || "0",
+        employer_insurance: initialData.employer_insurance || "0",
+        petrol_allowance: initialData.petrol_allowance || "0",
       });
     } else {
       setFormData(initialFormState);
@@ -72,6 +112,39 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
     }
     onSubmit(payload);
   };
+
+  // Spreadsheet Image Calculations (Base Data)
+  const grossSumA = (
+    parseFloat(formData.basic || 0) +
+    parseFloat(formData.hra || 0) +
+    parseFloat(formData.conveyance || 0) +
+    parseFloat(formData.child_edu || 0) +
+    parseFloat(formData.personal_allowance || 0) +
+    parseFloat(formData.incentive || 0) +
+    parseFloat(formData.other_earnings || 0)
+  ).toFixed(2);
+
+  const totalDeductionB = (
+    parseFloat(formData.epf || 0) +
+    parseFloat(formData.esi || 0) +
+    parseFloat(formData.deduction_insurance || 0) +
+    parseFloat(formData.prof_tax || 0) +
+    parseFloat(formData.lwf || 0) +
+    parseFloat(formData.staff_advance || 0) +
+    parseFloat(formData.tds || 0) +
+    parseFloat(formData.other_deduction || 0)
+  ).toFixed(2);
+
+  const netSalary = (parseFloat(grossSumA) - parseFloat(totalDeductionB)).toFixed(2);
+
+  const totalBenefitsC = (
+    parseFloat(formData.employer_epf || 0) +
+    parseFloat(formData.employer_esi || 0) +
+    parseFloat(formData.employer_insurance || 0) +
+    parseFloat(formData.petrol_allowance || 0)
+  ).toFixed(2);
+
+  const totalCTC = (parseFloat(grossSumA) + parseFloat(totalBenefitsC)).toFixed(2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -186,7 +259,7 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium">Salary</label>
+            <label className="mb-1.5 block text-sm font-medium">Salary (Gross Total)</label>
             <input
               type="number"
               name="salary"
@@ -196,6 +269,233 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
               step="0.01"
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
             />
+          </div>
+
+          <div className="border border-border/60 rounded-2xl bg-muted/10 p-4 transition-all">
+            <button
+              type="button"
+              onClick={() => setShowPayslipSettings(!showPayslipSettings)}
+              className="flex items-center justify-between w-full text-left font-semibold text-sm text-primary hover:text-primary-dark transition-colors"
+            >
+              <span>Detailed Salary & Payslip Structure (Base)</span>
+              <div className="flex items-center gap-2 text-xs font-normal text-muted-foreground">
+                {showPayslipSettings ? "Hide settings" : "Customize breakdown"}
+                {showPayslipSettings ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </div>
+            </button>
+
+            {showPayslipSettings && (
+              <div className="mt-4 space-y-5 border-t border-border/50 pt-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                
+                {/* 1. Monthly Earnings (Gross Salary A) */}
+                <div className="bg-indigo-50/30 dark:bg-indigo-950/10 p-3.5 rounded-xl border border-indigo-100/50">
+                  <h4 className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></span> Particulars (Monthly Earnings)
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Basic</span>
+                      <input type="number" name="basic" value={formData.basic} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-indigo-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">HRA</span>
+                      <input type="number" name="hra" value={formData.hra} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-indigo-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Conveyance</span>
+                      <input type="number" name="conveyance" value={formData.conveyance} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-indigo-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">CEA (Child Edu Allowance)</span>
+                      <input type="number" name="child_edu" value={formData.child_edu} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-indigo-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Personal Allowances</span>
+                      <input type="number" name="personal_allowance" value={formData.personal_allowance} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-indigo-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+                    
+                    <div className="mt-3 pt-2 border-t border-dashed border-indigo-200/50 flex items-center justify-between bg-amber-50/40 dark:bg-amber-950/10 p-2 rounded-md border border-amber-100/50">
+                      <span className="text-xs font-bold text-amber-800 dark:text-amber-400">Gross Salary(A)</span>
+                      <span className="text-xs font-black text-amber-800 dark:text-amber-400">₹{grossSumA}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Monthly Deductions (Total B) */}
+                <div className="bg-rose-50/30 dark:bg-rose-950/10 p-3.5 rounded-xl border border-rose-100/50">
+                  <h4 className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span> Deduction:
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">EPF</span>
+                      <input type="number" name="epf" value={formData.epf} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-rose-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-rose-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">ESI</span>
+                      <input type="number" name="esi" value={formData.esi} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-rose-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-rose-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Insurance</span>
+                      <input type="number" name="deduction_insurance" value={formData.deduction_insurance} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-rose-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-rose-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Professional Tax</span>
+                      <input type="number" name="prof_tax" value={formData.prof_tax} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-rose-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-rose-500 focus:outline-none" />
+                    </div>
+                    
+                    <div className="mt-3 pt-2 border-t border-dashed border-rose-200/50 flex items-center justify-between bg-zinc-100/50 dark:bg-zinc-800/40 p-2 rounded-md">
+                      <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Total(B)</span>
+                      <span className="text-xs font-black text-zinc-700 dark:text-zinc-300">₹{totalDeductionB}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Standalone Net Take-Home Card */}
+                <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 p-3 rounded-xl flex items-center justify-between shadow-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-bold tracking-wide text-emerald-600">Take-Home Pay</span>
+                    <span className="text-xs font-black text-emerald-800 dark:text-emerald-300">Net Salary(A-B)</span>
+                  </div>
+                  <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{netSalary}</span>
+                </div>
+
+                {/* 3. Benefits (Total C) */}
+                <div className="bg-sky-50/30 dark:bg-sky-950/10 p-3.5 rounded-xl border border-sky-100/50">
+                  <h4 className="text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span> Benefits (Cost to Company):
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Employer EPF Contribution</span>
+                      <input type="number" name="employer_epf" value={formData.employer_epf} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-sky-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Employer ESI Contribution</span>
+                      <input type="number" name="employer_esi" value={formData.employer_esi} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-sky-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Insurance (Employer Contribution)</span>
+                      <input type="number" name="employer_insurance" value={formData.employer_insurance} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-sky-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Petrol allowance</span>
+                      <input type="number" name="petrol_allowance" value={formData.petrol_allowance} onChange={handleChange} step="0.01"
+                        className="h-8 w-32 rounded-lg border border-sky-200/60 bg-background px-2.5 text-xs text-right focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+                    </div>
+                    
+                    <div className="mt-3 pt-2 border-t border-dashed border-sky-200/50 flex items-center justify-between bg-sky-100/30 dark:bg-sky-900/20 p-2 rounded-md">
+                      <span className="text-xs font-bold text-sky-800 dark:text-sky-300">Total(C)</span>
+                      <span className="text-xs font-black text-sky-800 dark:text-sky-300">₹{totalBenefitsC}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Miscellaneous / Other Adjustments Group */}
+                <div className="rounded-2xl border border-violet-100 bg-violet-50/30 p-3 dark:border-violet-950/50 dark:bg-violet-950/10 shadow-sm">
+                  <div className="mb-2 flex items-center gap-2 border-b border-violet-100 pb-1.5 dark:border-violet-950/50">
+                    <div className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" />
+                    <span className="text-[11px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                      Other Adjustments (Optional)
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground mb-0.5 font-medium">Incentive</label>
+                      <input
+                        type="number"
+                        name="incentive"
+                        value={formData.incentive}
+                        onChange={handleChange}
+                        step="0.01"
+                        className="h-8 w-full rounded-lg border border-border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground mb-0.5 font-medium">Other Earnings</label>
+                      <input
+                        type="number"
+                        name="other_earnings"
+                        value={formData.other_earnings}
+                        onChange={handleChange}
+                        step="0.01"
+                        className="h-8 w-full rounded-lg border border-border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground mb-0.5 font-medium">LWF Deduction</label>
+                      <input
+                        type="number"
+                        name="lwf"
+                        value={formData.lwf}
+                        onChange={handleChange}
+                        step="0.01"
+                        className="h-8 w-full rounded-lg border border-border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground mb-0.5 font-medium">Staff Advance</label>
+                      <input
+                        type="number"
+                        name="staff_advance"
+                        value={formData.staff_advance}
+                        onChange={handleChange}
+                        step="0.01"
+                        className="h-8 w-full rounded-lg border border-border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground mb-0.5 font-medium">TDS (Income Tax)</label>
+                      <input
+                        type="number"
+                        name="tds"
+                        value={formData.tds}
+                        onChange={handleChange}
+                        step="0.01"
+                        className="h-8 w-full rounded-lg border border-border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground mb-0.5 font-medium">Other Deduction</label>
+                      <input
+                        type="number"
+                        name="other_deduction"
+                        value={formData.other_deduction}
+                        onChange={handleChange}
+                        step="0.01"
+                        className="h-8 w-full rounded-lg border border-border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all shadow-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Cost-to-Company Standout Card */}
+                <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-3.5 rounded-2xl flex items-center justify-between shadow-md ring-2 ring-amber-500/20">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-black tracking-wider text-amber-100">Total Compensation Package</span>
+                    <span className="text-sm font-black">CTC(A+C)</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-lg font-black leading-none">₹{totalCTC}</span>
+                    <span className="text-[9px] opacity-80">Per Month</span>
+                  </div>
+                </div>
+
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
