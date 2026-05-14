@@ -546,7 +546,11 @@ const PayslipsPage = () => {
                                       </tr>
                                       <tr>
                                         <td style={{ ...tdStyle, fontWeight: "bold" }}>ESI</td>
-                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{parseFloat(selectedSlip.deduction_esi) > 0 ? formatINR(selectedSlip.deduction_esi) : "-"}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ ...tdStyle, fontWeight: "bold" }}>Insurance</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{parseFloat(selectedSlip.deduction_insurance) > 0 ? formatINR(selectedSlip.deduction_insurance) : "-"}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ ...tdStyle, fontWeight: "bold" }}>Professional Tax</td>
@@ -554,19 +558,19 @@ const PayslipsPage = () => {
                                       </tr>
                                       <tr>
                                         <td style={{ ...tdStyle, fontWeight: "bold" }}>LWF</td>
-                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{parseFloat(selectedSlip.deduction_lwf) > 0 ? formatINR(selectedSlip.deduction_lwf) : "-"}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ ...tdStyle, fontWeight: "bold" }}>Staff Advance</td>
-                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{parseFloat(selectedSlip.deduction_staff_advance) > 0 ? formatINR(selectedSlip.deduction_staff_advance) : "-"}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ ...tdStyle, fontWeight: "bold" }}>TDS</td>
-                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{parseFloat(selectedSlip.deduction_tds) > 0 ? formatINR(selectedSlip.deduction_tds) : "-"}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ ...tdStyle, fontWeight: "bold" }}>Other Deduction</td>
-                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>-</td>
+                                        <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", color: "#b91c1c" }}>{parseFloat(selectedSlip.deduction_other) > 0 ? formatINR(selectedSlip.deduction_other) : "-"}</td>
                                       </tr>
                                       <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "900", fontSize: "12px" }}>
                                         <td style={tdStyle}>Total Deductions</td>
@@ -574,6 +578,59 @@ const PayslipsPage = () => {
                                       </tr>
                                     </tbody>
                                   </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      {/* Benefits (CTC Components) Section */}
+                      <tr>
+                        <td colSpan="4" style={{ padding: "0", border: "none" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <thead>
+                              <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "bold", textAlign: "center" }}>
+                                <td style={{ ...tdStyle, width: "50%" }}>Benefits (Cost to Company Components)</td>
+                                <td style={{ ...tdStyle, width: "25%" }}>Contribution / Allowance</td>
+                                <td style={{ ...tdStyle, width: "25%" }}>Total(C)</td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Employer EPF Contribution</td>
+                                <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{parseFloat(selectedSlip.employer_epf) > 0 ? formatINR(selectedSlip.employer_epf) : "-"}</td>
+                                <td rowSpan="4" style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", verticalAlign: "middle", fontWeight: "bold", backgroundColor: "#f9fafb" }}>
+                                  {formatINR(
+                                    parseFloat(selectedSlip.employer_epf || 0) + 
+                                    parseFloat(selectedSlip.employer_esi || 0) + 
+                                    parseFloat(selectedSlip.employer_insurance || 0) + 
+                                    parseFloat(selectedSlip.petrol_allowance || 0)
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Employer ESI Contribution</td>
+                                <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{parseFloat(selectedSlip.employer_esi) > 0 ? formatINR(selectedSlip.employer_esi) : "-"}</td>
+                              </tr>
+                              <tr>
+                                <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Insurance (Employer Contribution)</td>
+                                <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{parseFloat(selectedSlip.employer_insurance) > 0 ? formatINR(selectedSlip.employer_insurance) : "-"}</td>
+                              </tr>
+                              <tr>
+                                <td style={{ ...tdStyle, fontWeight: "bold", backgroundColor: "#fafafa" }}>Petrol allowance</td>
+                                <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace" }}>{parseFloat(selectedSlip.petrol_allowance) > 0 ? formatINR(selectedSlip.petrol_allowance) : "-"}</td>
+                              </tr>
+                              <tr style={{ backgroundColor: "#fffbeb", fontWeight: "900", borderTop: "2px solid #000" }}>
+                                <td colSpan="2" style={{ ...tdStyle, fontSize: "11px", color: "#92400e" }}>MONTHLY CTC(A+C)</td>
+                                <td style={{ ...tdStyle, textAlign: "right", fontFamily: "monospace", fontSize: "12px", color: "#92400e" }}>
+                                  ₹{formatINR(
+                                    parseFloat(selectedSlip.gross_earnings || 0) +
+                                    (parseFloat(selectedSlip.employer_epf || 0) + 
+                                     parseFloat(selectedSlip.employer_esi || 0) + 
+                                     parseFloat(selectedSlip.employer_insurance || 0) + 
+                                     parseFloat(selectedSlip.petrol_allowance || 0))
+                                  )}
                                 </td>
                               </tr>
                             </tbody>
