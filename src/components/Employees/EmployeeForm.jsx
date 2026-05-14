@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { X, ChevronDown, ChevronUp, MapPin, Search, Eye } from "lucide-react";
 import { useUsers } from "@/customHook/useUsers";
 
 const initialFormState = {
@@ -64,6 +64,9 @@ const parseVal = (val) => {
 const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false }) => {
   const [formData, setFormData] = useState(initialFormState);
   const [showPayslipSettings, setShowPayslipSettings] = useState(false);
+  const [showLocationSettings, setShowLocationSettings] = useState(false);
+  const [addressQuery, setAddressQuery] = useState("");
+  const [searchingLocation, setSearchingLocation] = useState(false);
   const { records: users, fetchAll: fetchUsers } = useUsers();
 
   useEffect(() => {
@@ -134,7 +137,66 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
     if (payload.user === "") {
       payload.user = null;
     }
+    if (payload.work_lat === "") {
+      payload.work_lat = null;
+    }
+    if (payload.work_lon === "") {
+      payload.work_lon = null;
+    }
     onSubmit(payload);
+  };
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData((prev) => ({
+          ...prev,
+          work_lat: position.coords.latitude.toFixed(6),
+          work_lon: position.coords.longitude.toFixed(6),
+        }));
+      },
+      (error) => {
+        console.error("Error fetching location", error);
+        alert("Failed to fetch location: " + error.message);
+      }
+    );
+  };
+
+  const handleSearchAddress = async () => {
+    if (!addressQuery.trim()) return;
+    setSearchingLocation(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(addressQuery)}`
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setFormData((prev) => ({
+          ...prev,
+          work_lat: parseFloat(lat).toFixed(6),
+          work_lon: parseFloat(lon).toFixed(6),
+        }));
+      } else {
+        alert("Location not found. Check spelling or add city/country.");
+      }
+    } catch (error) {
+      console.error("Error searching location", error);
+      alert("Search currently unavailable. Please check internet connection.");
+    } finally {
+      setSearchingLocation(false);
+    }
+  };
+
+  const handleVerifyOnMap = () => {
+    if (formData.work_lat && formData.work_lon) {
+      window.open(`https://www.google.com/maps?q=${formData.work_lat},${formData.work_lon}`, "_blank");
+    }
   };
 
   // Spreadsheet Image Calculations (Base Data)
@@ -522,31 +584,103 @@ const EmployeeForm = ({ initialData = null, onSubmit, onCancel, loading = false 
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium">Work Latitude</label>
-              <input
-                type="number"
-                name="work_lat"
-                value={formData.work_lat}
-                onChange={handleChange}
-                step="0.000001"
-                placeholder="Optional (e.g., 13.0827)"
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium">Work Longitude</label>
-              <input
-                type="number"
-                name="work_lon"
-                value={formData.work_lon}
-                onChange={handleChange}
-                step="0.000001"
-                placeholder="Optional (e.g., 80.2707)"
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-glow"
-              />
-            </div>
+          <div className="border border-border/60 rounded-2xl bg-muted/10 p-4 transition-all">
+            <button
+              type="button"
+              onClick={() => setShowLocationSettings(!showLocationSettings)}
+              className="flex items-center justify-between w-full text-left font-semibold text-sm text-primary hover:text-primary-dark transition-colors"
+            >
+              <span>Work Location (GPS Tracking)</span>
+              <div className="flex items-center gap-2 text-xs font-normal text-muted-foreground">
+                {showLocationSettings ? "Hide settings" : "Customize location"}
+                {showLocationSettings ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </div>
+            </button>
+
+            {showLocationSettings && (
+              <div className="mt-4 space-y-4 border-t border-border/50 pt-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                
+                {/* Address Search Component */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-foreground">Dynamic Place / Address Search</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+                      <input
+                        type="text"
+                        placeholder="Search landmark, city or area..."
+                        value={addressQuery}
+                        onChange={(e) => setAddressQuery(e.target.value)}
+                        className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary-glow"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSearchAddress();
+                          }
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSearchAddress}
+                      disabled={searchingLocation || !addressQuery.trim()}
+                      className="h-10 px-4 bg-secondary/10 hover:bg-secondary/20 text-secondary-foreground border border-secondary/20 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+                    >
+                      {searchingLocation ? "Searching..." : "Search"}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/70 italic">Automatically computes GPS coordinates using dynamic address lookup.</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Work Latitude</label>
+                    <input
+                      type="number"
+                      name="work_lat"
+                      value={formData.work_lat}
+                      onChange={handleChange}
+                      step="0.000001"
+                      placeholder="e.g., 13.0827"
+                      className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Work Longitude</label>
+                    <input
+                      type="number"
+                      name="work_lon"
+                      value={formData.work_lon}
+                      onChange={handleChange}
+                      step="0.000001"
+                      placeholder="e.g., 80.2707"
+                      className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+
+                {/* Multi-Action Widget */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDetectLocation}
+                    className="flex items-center justify-center gap-1.5 h-9 rounded-xl bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 font-semibold text-xs transition-all"
+                  >
+                    <MapPin className="h-3.5 w-3.5" />
+                    Detect Live GPS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleVerifyOnMap}
+                    disabled={!formData.work_lat || !formData.work_lon}
+                    className="flex items-center justify-center gap-1.5 h-9 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-transparent font-semibold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    Verify on Map
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
