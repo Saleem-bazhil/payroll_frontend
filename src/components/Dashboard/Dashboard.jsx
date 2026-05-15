@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Wallet, TrendingUp, Clock, ArrowUpRight, Loader2, AlertCircle } from "lucide-react";
 import StatsCard from '../ui/StatsCard';
@@ -102,4 +102,4 @@ function Dashboard() {
   );
 };
 
-export default Dashboard;
+export default Dashboard;

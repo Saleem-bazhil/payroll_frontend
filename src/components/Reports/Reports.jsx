@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PageHeader from "../ui/PageHeader";
 import { Download, TrendingUp, DollarSign, Users, BarChart3 } from "lucide-react";
