@@ -1,15 +1,13 @@
-import { motion } from "framer-motion";
+const accentMap = {
+  primary: "from-[#7C4DFF] to-[#8B5CF6]",
+  success: "from-emerald-400 to-emerald-600",
+  warning: "from-amber-400 to-orange-500",
+  info: "from-cyan-400 to-blue-500",
+};
 
 const StatsCard = ({ label, value, delta, deltaType = "up", icon: Icon, accent = "primary" }) => {
-  const accentMap = {
-    primary: "from-[#7C4DFF] to-[#8B5CF6]",
-    success: "from-emerald-400 to-emerald-600",
-    warning: "from-amber-400 to-orange-500",
-    info: "from-cyan-400 to-blue-500",
-  };
-
   return (
-    <motion.div whileHover={{ y: -2 }} className="glass-card rounded-3xl p-5 md:p-6 h-full flex flex-col">
+    <div className="glass-card rounded-3xl p-5 md:p-6 h-full flex flex-col">
       <div className="flex items-start justify-between">
         <span className="text-sm text-muted-foreground">{label}</span>
         <div className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br ${accentMap[accent]} text-white shadow-glow`}>
@@ -27,7 +25,7 @@ const StatsCard = ({ label, value, delta, deltaType = "up", icon: Icon, accent =
           <span className="text-muted-foreground">vs last month</span>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
