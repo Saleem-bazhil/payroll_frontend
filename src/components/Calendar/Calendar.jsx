@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "../ui/PageHeader";
 import { motion } from "framer-motion";
