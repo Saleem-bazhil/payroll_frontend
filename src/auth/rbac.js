@@ -90,6 +90,13 @@ export function isAuthenticated() {
   return Boolean(getAccessToken());
 }
 
+export function getUserDisplayName() {
+  const claims = getTokenClaims();
+  if (!claims) return "Guest";
+  const fullName = [claims.first_name, claims.last_name].filter(Boolean).join(" ");
+  return fullName || claims.username || "User";
+}
+
 export function getDefaultRouteByRole(role) {
   const normalizedRole = normalizeRole(role);
   if (normalizedRole === ROLES.EMPLOYEE) return "/attendance";

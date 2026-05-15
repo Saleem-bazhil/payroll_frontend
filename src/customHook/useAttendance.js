@@ -109,6 +109,28 @@ export const useAttendance = () => {
     return data;
   }, []);
 
+  const checkInGeo = useCallback(async (geoData) => {
+    const data = await handleRequest(
+      () => attendanceService.checkIn(geoData),
+      "Successfully punched in! Distance verified."
+    );
+    if (data) {
+      setRecords((prev) => [data, ...prev]);
+    }
+    return data;
+  }, []);
+
+  const checkOutGeo = useCallback(async (geoData) => {
+    const data = await handleRequest(
+      () => attendanceService.checkOut(geoData),
+      "Successfully punched out! Distance verified."
+    );
+    if (data) {
+      setRecords((prev) => prev.map((r) => (r.id === data.id ? data : r)));
+    }
+    return data;
+  }, []);
+
   const clearMessages = useCallback(() => {
     setError(null);
     setSuccess(null);
@@ -125,6 +147,8 @@ export const useAttendance = () => {
     patchRecord,
     deleteRecord,
     bulkCreate,
+    checkInGeo,
+    checkOutGeo,
     clearMessages,
     setRecords,
   };

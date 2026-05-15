@@ -7,8 +7,10 @@ import PayrollPage from './pages/PayrollPage';
 import PayslipPage from './pages/PayslipPage';
 // import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
+import LeavePage from './pages/LeavePage';
 import LoginPage from './pages/Login';
 import UserManagementPage from './pages/UserManagementPage';
+import OnboardingPage from './pages/OnboardingPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ROLES, getDefaultRouteByRole, getUserRole, isAuthenticated } from './auth/rbac';
 // import CompliancePage from './pages/CompliancePage';
@@ -30,6 +32,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<UserManagementPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/employees" element={<EmployeePage />} />
           <Route path="/payroll" element={<PayrollPage />} />
           <Route path="/reports" element={<ReportsPage />} />
@@ -38,6 +41,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EMPLOYEE]} />}>
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/payslips" element={<PayslipPage />} />
+          <Route path="/leaves" element={<LeavePage />} />
         </Route>
 
         {/* <Route path="/calendar" element={<CalendarPage />} /> */}

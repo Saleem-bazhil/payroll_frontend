@@ -5,9 +5,20 @@ const ENDPOINTS = {
   BY_ID: (id) => `/api/attendance/${id}/`,
   BULK: "/api/attendance/bulk/",
   STATS: "/api/attendance/stats/",
+  CHECK_IN: "/api/attendance/check_in/",
+  CHECK_OUT: "/api/attendance/check_out/",
 };
 
 export const attendanceService = {
+  checkIn: async (geoData) => {
+    const { data } = await api.post(ENDPOINTS.CHECK_IN, geoData);
+    return data;
+  },
+
+  checkOut: async (geoData) => {
+    const { data } = await api.post(ENDPOINTS.CHECK_OUT, geoData);
+    return data;
+  },
 
   getAll: async (params = {}) => {
     const { data } = await api.get(ENDPOINTS.BASE, { params });

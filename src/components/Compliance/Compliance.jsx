@@ -7,11 +7,11 @@ import StatsCard from "../ui/StatsCard";
 import { ShieldCheck, Download, AlertTriangle, FileCheck, Percent } from "lucide-react";
 
 const filings = [
-  { name: "Federal Income Tax", period: "Q3 2025", due: "Nov 28, 2025", amount: "$284,500", status: "Pending" },
-  { name: "State Tax Filing", period: "Q3 2025", due: "Dec 05, 2025", amount: "$92,140", status: "Pending" },
-  { name: "Social Security", period: "Oct 2025", due: "Nov 15, 2025", amount: "$118,820", status: "Filed" },
-  { name: "Medicare Contribution", period: "Oct 2025", due: "Nov 15, 2025", amount: "$42,360", status: "Filed" },
-  { name: "Unemployment Tax", period: "Q3 2025", due: "Oct 31, 2025", amount: "$28,540", status: "Filed" },
+  { name: "Federal Income Tax", period: "Q3 2025", due: "Nov 28, 2025", amount: "₹284,500", status: "Pending" },
+  { name: "State Tax Filing", period: "Q3 2025", due: "Dec 05, 2025", amount: "₹92,140", status: "Pending" },
+  { name: "Social Security", period: "Oct 2025", due: "Nov 15, 2025", amount: "₹118,820", status: "Filed" },
+  { name: "Medicare Contribution", period: "Oct 2025", due: "Nov 15, 2025", amount: "₹42,360", status: "Filed" },
+  { name: "Unemployment Tax", period: "Q3 2025", due: "Oct 31, 2025", amount: "₹28,540", status: "Filed" },
 ];
 
 const CompliancePage = () => {

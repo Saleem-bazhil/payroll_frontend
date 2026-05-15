@@ -6,7 +6,7 @@ import PageHeader from "../ui/PageHeader";
 import StatsCard from "../ui/StatsCard";
 import Toolbar from "../ui/Toolbar";
 import DataTable from "../ui/DataTable";
-import { Users, UserPlus, UserCheck, UserMinus, Pencil, Trash2, X, Check } from "lucide-react";
+import { Users, UserPlus, UserCheck, UserMinus, Pencil, Trash2, X, Check, Clock } from "lucide-react";
 import { useEmployee } from "../../customHook/useEmployee";
 import EmployeeForm from "./EmployeeForm";
 
@@ -25,6 +25,7 @@ const EmployeesPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [activeTab, setActiveTab] = useState("working"); // working | separated
 
   useEffect(() => {
     fetchAll();
@@ -63,6 +64,14 @@ const EmployeesPage = () => {
       })),
     [records]
   );
+
+  const filteredEmployees = useMemo(() => {
+    if (activeTab === "working") {
+      return employeeRows.filter((e) => e.status === "active" || e.status === "onleave");
+    } else {
+      return employeeRows.filter((e) => e.status === "inactive");
+    }
+  }, [employeeRows, activeTab]);
 
   const employeeStats = useMemo(() => {
     const total = employeeRows.length;
@@ -120,8 +129,31 @@ const EmployeesPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6">
         <StatsCard label="Total Employees" value={employeeStats.total.toString()} delta="3.2%" icon={Users} accent="primary" />
         <StatsCard label="Active" value={employeeStats.active.toString()} delta="2.1%" icon={UserCheck} accent="success" />
-        <StatsCard label="On Leave" value={employeeStats.onLeave.toString()} delta="0.8%" icon={UserMinus} accent="warning" />
-        <StatsCard label="Inactive" value={employeeStats.inactive.toString()} delta="14%" icon={UserPlus} accent="info" />
+        <StatsCard label="On Leave" value={employeeStats.onLeave.toString()} delta="0.8%" icon={Clock} accent="warning" />
+        <StatsCard label="Inactive" value={employeeStats.inactive.toString()} delta="14%" icon={UserMinus} accent="muted" />
+      </div>
+
+      <div className="flex rounded-2xl overflow-hidden bg-muted/40 p-1.5 mb-6 max-w-md border border-border">
+        <button
+          onClick={() => setActiveTab("working")}
+          className={`flex-1 py-2 text-center rounded-xl text-sm font-medium transition-all duration-200 ${
+            activeTab === "working"
+              ? "bg-card text-foreground shadow-sm border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Working ({employeeStats.active + employeeStats.onLeave})
+        </button>
+        <button
+          onClick={() => setActiveTab("separated")}
+          className={`flex-1 py-2 text-center rounded-xl text-sm font-medium transition-all duration-200 ${
+            activeTab === "separated"
+              ? "bg-card text-foreground shadow-sm border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Separated ({employeeStats.inactive})
+        </button>
       </div>
 
       <Toolbar
@@ -133,7 +165,7 @@ const EmployeesPage = () => {
       />
 
       <DataTable
-        data={employeeRows}
+        data={filteredEmployees}
         columns={[
           {
             key: "name", label: "Employee",
@@ -259,6 +291,8 @@ const EmployeesPage = () => {
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

@@ -41,7 +41,7 @@ const PayrollTrend = () => {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(127,127,127,0.15)" vertical={false} />
             <XAxis dataKey="m" stroke="currentColor" tick={{ fontSize: 12 }} className="text-muted-foreground" axisLine={false} tickLine={false} />
-            <YAxis stroke="currentColor" tick={{ fontSize: 12 }} className="text-muted-foreground" axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
+            <YAxis stroke="currentColor" tick={{ fontSize: 12 }} className="text-muted-foreground" axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v / 1000}k`} />
             <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12 }} />
             <Area type="monotone" dataKey="payroll" stroke="#8B5CF6" strokeWidth={2.5} fill="url(#g1)" />
             <Area type="monotone" dataKey="bonus" stroke="#06B6D4" strokeWidth={2.5} fill="url(#g2)" />

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
+  UserPlus,
   CalendarCheck,
   Wallet,
   FileText,
@@ -20,10 +21,12 @@ import { ROLES, clearAuth, getUserRole, normalizeRole } from "@/auth/rbac";
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { to: "/users", label: "Users", icon: Users, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
+  { to: "/onboarding", label: "Onboarding", icon: UserPlus, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { to: "/employees", label: "Employees", icon: Users },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
   { to: "/payroll", label: "Payroll", icon: Wallet },
   { to: "/payslips", label: "Payslips", icon: FileText },
+  { to: "/leaves", label: "Leave & Permissions", icon: CalendarDays },
   // { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/reports", label: "Reports", icon: BarChart3, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   // { to: "/compliance", label: "Tax & Compliance", icon: ShieldCheck },
@@ -32,7 +35,7 @@ const nav = [
 const defaultRoles = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 
 const navWithRoles = nav.map((item) => {
-  if (item.to === "/attendance" || item.to === "/payslips") {
+  if (item.to === "/attendance" || item.to === "/payslips" || item.to === "/leaves") {
     return { ...item, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EMPLOYEE] };
   }
   return { ...item, roles: item.roles || defaultRoles };
@@ -152,4 +155,3 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   );
 }
 
-export { nav as sidebarNav };
