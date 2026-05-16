@@ -12,6 +12,43 @@ import UpcomingPayment from './UpcomingPayment';
 import GreetingHeader from '../ui/GreetingHeader';
 import { api } from "@/api/Api";
 
+const parseCurrency = (value) => {
+  if (typeof value === "number") return value;
+  if (!value) return 0;
+  return Number(String(value).replace(/[^\d.-]/g, "")) || 0;
+};
+
+const buildDepartmentSplit = (employees = []) => {
+  const activeEmployees = employees.filter((employee) => employee.status === "active");
+  const counts = activeEmployees.reduce((acc, employee) => {
+    const department = employee.department || "Unassigned";
+    acc[department] = (acc[department] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.entries(counts)
+    .map(([name, count]) => ({
+      name,
+      count,
+      value: activeEmployees.length ? Math.round((count / activeEmployees.length) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+};
+
+const buildPayrollTrend = (cycles = []) =>
+  [...cycles]
+    .reverse()
+    .slice(-8)
+    .map((cycle) => {
+      const [m = cycle.period, year = ""] = String(cycle.period || "").split(" ");
+      return {
+        m,
+        period: [m, year].filter(Boolean).join(" "),
+        payroll: parseCurrency(cycle.net),
+        bonus: Math.max(parseCurrency(cycle.gross) - parseCurrency(cycle.net), 0),
+      };
+    });
+
 function Dashboard() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +59,29 @@ function Dashboard() {
     setError(null);
     try {
       const res = await api.get("/api/payslips/dashboard_summary/");
-      setSummary(res.data);
+      const nextSummary = { ...res.data };
+
+      if (!Array.isArray(nextSummary.departmentSplit) || nextSummary.departmentSplit.length === 0) {
+        try {
+          const employeesRes = await api.get("/api/employees/");
+          nextSummary.departmentSplit = buildDepartmentSplit(employeesRes.data || []);
+        } catch (employeeErr) {
+          console.warn("Department split fallback failed:", employeeErr);
+          nextSummary.departmentSplit = [];
+        }
+      }
+
+      if (!Array.isArray(nextSummary.payrollTrend) || nextSummary.payrollTrend.length === 0) {
+        try {
+          const cyclesRes = await api.get("/api/payslips/cycles_summary/");
+          nextSummary.payrollTrend = buildPayrollTrend(cyclesRes.data || []);
+        } catch (cyclesErr) {
+          console.warn("Payroll trend fallback failed:", cyclesErr);
+          nextSummary.payrollTrend = [];
+        }
+      }
+
+      setSummary(nextSummary);
     } catch (err) {
       console.error("Dashboard Fetch Error:", err);
       setError("Failed to aggregate real-time metrics from the core system.");
@@ -70,7 +129,7 @@ function Dashboard() {
         </h2>
         <div className="flex items-center gap-3">
             <Button variant="outline" className="hidden sm:flex" onClick={fetchDashboard}>Refresh Metrics</Button>
-            <Button icon={ArrowUpRight} className="w-full sm:w-auto">Run payroll</Button>
+            {/* <Button icon={ArrowUpRight} className="w-full sm:w-auto">Run payroll</Button> */}
         </div>
       </div>
 
@@ -83,10 +142,10 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-            <PayrollTrend />
+            <PayrollTrend data={summary?.payrollTrend || []} />
         </div>
         <div className="lg:col-span-1">
-            <DepartmentSplit />
+            <DepartmentSplit data={summary?.departmentSplit || []} />
         </div>
       </div>
 

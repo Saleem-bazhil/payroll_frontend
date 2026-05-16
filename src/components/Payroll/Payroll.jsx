@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import PageHeader from "../ui/PageHeader";
@@ -19,7 +18,6 @@ const PayrollPage = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Starting Live Payroll Fetch...");
       const [cyclesRes, statsRes] = await Promise.all([
         api.get("/api/payslips/cycles_summary/").catch(e => {
           console.error("Cycle API Error Details:", e);
@@ -30,9 +28,6 @@ const PayrollPage = () => {
           throw new Error(`KPI Endpt Failure: ${e.response?.status || e.message}`);
         })
       ]);
-
-      console.log("Cycles Received:", cyclesRes.data);
-      console.log("Stats Received:", statsRes.data);
 
       setRuns(cyclesRes.data || []);
       if (statsRes.data) {
@@ -90,6 +85,7 @@ const PayrollPage = () => {
       ) : (
         <DataTable
           data={runs}
+          emptyMessage="No payroll cycles found. Generate payslips to create payroll cycle history."
           columns={[
             { key: "period", label: "Period", render: (r) => <span className="font-semibold text-sm tracking-tight">{r.period}</span> },
             { key: "employees", label: "Total Staff", render: (r) => <span className="text-sm text-muted-foreground font-medium">{r.employees}</span> },
@@ -119,4 +115,4 @@ const PayrollPage = () => {
   );
 };
 
-export default PayrollPage;
+export default PayrollPage;

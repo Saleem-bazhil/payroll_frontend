@@ -31,7 +31,7 @@ export const useAttendance = () => {
       setError(null);
       setSuccess(null);
       const result = await requestFn();
-      setSuccess(successMsg || "Operation completed successfully");
+      if (successMsg) setSuccess(successMsg);
       return result;
     } catch (err) {
       const message = parseErrorMessage(err);
@@ -44,8 +44,7 @@ export const useAttendance = () => {
 
   const fetchAll = useCallback(async (params = {}) => {
     const data = await handleRequest(
-      () => attendanceService.getAll(params),
-      "Records fetched successfully"
+      () => attendanceService.getAll(params)
     );
     if (data) setRecords(data);
     return data;

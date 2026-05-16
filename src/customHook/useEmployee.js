@@ -30,7 +30,7 @@ export const useEmployee = () => {
             setError(null);
             setSuccess(null);
             const result = await requestFn();
-            setSuccess(successMsg || "Operation completed successfully");
+            if (successMsg) setSuccess(successMsg);
             return result;
         }
         catch (err) {
@@ -44,7 +44,7 @@ export const useEmployee = () => {
     };
 
     const fetchAll = useCallback(async (params = {}) => {
-        const data = await handleRequest(() => employeeService.getAll(params), "Employees fetched successfully");
+        const data = await handleRequest(() => employeeService.getAll(params));
         if (data) setRecords(data);
         return data;
     },[]);

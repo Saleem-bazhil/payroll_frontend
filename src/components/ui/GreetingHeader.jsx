@@ -67,7 +67,7 @@ export const GreetingHeader = ({ subtitle = "" }) => {
           </p>
         </div>
 
-        <div className="hidden md:flex items-center gap-3.5 px-5 py-3 bg-primary/5 border border-primary/10 rounded-2xl backdrop-blur-md">
+        {/* <div className="hidden md:flex items-center gap-3.5 px-5 py-3 bg-primary/5 border border-primary/10 rounded-2xl backdrop-blur-md">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/15 text-primary">
             <Sparkles className="h-5 w-5 animate-spin-slow" />
           </div>
@@ -75,7 +75,7 @@ export const GreetingHeader = ({ subtitle = "" }) => {
             <div className="text-[11px] font-bold uppercase tracking-wider text-primary/70">Quick Tip</div>
             <div className="text-xs font-medium text-foreground">Stay focused and have a great day!</div>
           </div>
-        </div>
+        </div> */}
       </div>
     </motion.div>
   );

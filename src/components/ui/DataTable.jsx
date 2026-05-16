@@ -1,4 +1,4 @@
-const DataTable = ({ columns, data }) => {
+const DataTable = ({ columns, data, emptyMessage = "No records found." }) => {
   return (
     <div className="glass-card rounded-3xl overflow-hidden">
       <div className="overflow-x-auto scrollbar-thin">
@@ -13,15 +13,23 @@ const DataTable = ({ columns, data }) => {
             </tr>
           </thead>
           <tbody>
-            {data.map((row, i) => (
-              <tr key={i} className="border-t border-border hover:bg-muted/40 transition">
-                {columns.map((c) => (
-                  <td key={c.key} className={`px-5 py-4 ${c.className || ""}`}>
-                    {c.render ? c.render(row) : row[c.key]}
-                  </td>
-                ))}
+            {data.length === 0 ? (
+              <tr className="border-t border-border">
+                <td colSpan={columns.length} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                  {emptyMessage}
+                </td>
               </tr>
-            ))}
+            ) : (
+              data.map((row, i) => (
+                <tr key={i} className="border-t border-border hover:bg-muted/40 transition">
+                  {columns.map((c) => (
+                    <td key={c.key} className={`px-5 py-4 ${c.className || ""}`}>
+                      {c.render ? c.render(row) : row[c.key]}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

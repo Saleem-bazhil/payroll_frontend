@@ -29,7 +29,7 @@ const DashboardPage = () => {
                 <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)} className="-ml-2">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <div className="font-semibold text-base">PayrollX</div>
+                <div className="font-semibold text-base">Payroll</div>
               </div>
             </header>
             
